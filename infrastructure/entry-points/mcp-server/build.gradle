@@ -1,0 +1,21 @@
+dependencies {
+    implementation project(':model')
+    implementation project(':usecase')
+    implementation 'org.springframework:spring-context'
+
+    implementation platform("org.springframework.ai:spring-ai-bom:1.0.1")
+
+    // MCP Server WebFlux (SSE) + opción de STDIO
+    implementation "org.springframework.ai:spring-ai-starter-mcp-server-webflux"
+    implementation "org.springframework.ai:spring-ai-mcp:1.0.1"
+
+    // MCP Server WebFlux + Model Context Protocol
+    implementation "io.modelcontextprotocol.sdk:mcp-spring-webflux"
+    implementation "io.modelcontextprotocol.sdk:mcp"
+
+    // Reactivo
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+
+    implementation "io.modelcontextprotocol.sdk:mcp-spring-webflux"
+
+}
