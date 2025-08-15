@@ -26,22 +26,38 @@ public class McpToolsConfig {
         McpSchema.Tool saludoTool = new McpSchema.Tool(
                 "saludoTool",
                 "Devuelve un saludo reactivo",
-                "{}"
+                """
+                {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string" }
+                  },
+                  "required": ["name"]
+                }
+                """
         );
+
 
         McpSchema.Tool healthCheckTool = new McpSchema.Tool(
                 "healthCheck",
                 "Retorna 'OK' para health checks",
-                "{}"
+                """
+                {
+                  "type": "object",
+                  "properties": {}
+                }
+                """
         );
 
-        var tools = List.of(
+
+        return List.of(
                 new McpServerFeatures.AsyncToolSpecification(
                         saludoTool,
                         (exchange, input) -> {
                             log.info("Executing saludoTool with input: {}", input);
                             return Mono.just(
-                                    new McpSchema.CallToolResult("Hola desde MCP Tool: " + input, false)
+                                    new McpSchema.CallToolResult("Hola desde MCP Tool: " + input,
+                                            false)
                             );
                         }
                 ),
@@ -55,10 +71,5 @@ public class McpToolsConfig {
                         }
                 )
         );
-
-        log.info("Created {} MCP tools", tools.size());
-        tools.forEach(tool -> log.info("Tool: {}", tool.tool().name()));
-
-        return tools;
     }
 }

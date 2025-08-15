@@ -1,0 +1,37 @@
+##Spring Configuration
+server:
+  port: 8080
+spring:
+  application:
+    name: mcp
+  devtools:
+    add-properties: false
+  ai:
+    mcp:
+      server:
+        name: mcp-bancolombia
+        version: 1.0.0
+        # Tipo ASYNC recomendado para reactivo
+        type: ASYNC
+        instructions: "MCP reactivo con tools, resources y prompts"
+        # Activar ambos transportes:
+        stdio: true                           # STDIO
+        sse-endpoint: /sse                    # HTTP SSE (lectura stream)
+        sse-message-endpoint: /mcp/messages   # HTTP (POST JSON-RPC)
+        capabilities:
+          tool: true
+          resource: true
+          prompt: true
+          completion: true
+        request-timeout: 20s
+  h2:
+    console:
+      enabled: true
+      path: /h2
+  profiles:
+    include:
+
+logging:
+  level:
+    io.modelcontextprotocol: DEBUG
+    org.springframework.ai.mcp: DEBUG
