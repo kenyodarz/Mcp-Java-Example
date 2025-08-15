@@ -22,7 +22,7 @@ public class McpResourcesConfig {
                 "System information",
                 "application/json",
                 null, // mimeTypeHint
-                null  // template
+                null  // annotations
         );
 
         var spec = new McpServerFeatures.AsyncResourceSpecification(

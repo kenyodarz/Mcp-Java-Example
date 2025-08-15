@@ -5,6 +5,7 @@ import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
 import io.modelcontextprotocol.server.transport.WebFluxSseServerTransportProvider;
+import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -19,17 +20,20 @@ public class McpServerConfig {
     private final List<McpServerFeatures.AsyncToolSpecification> tools;
     private final List<McpServerFeatures.AsyncResourceSpecification> resources;
     private final List<McpServerFeatures.AsyncPromptSpecification> prompts;
+    private final List<McpSchema.ResourceTemplate> templates;
     private final ObjectMapper objectMapper;
 
     public McpServerConfig(
             List<McpServerFeatures.AsyncToolSpecification> tools,
             List<McpServerFeatures.AsyncResourceSpecification> resources,
             List<McpServerFeatures.AsyncPromptSpecification> prompts,
+            List<McpSchema.ResourceTemplate> templates,
             ObjectMapper objectMapper
     ) {
         this.tools = tools;
         this.resources = resources;
         this.prompts = prompts;
+        this.templates = templates;
         this.objectMapper = objectMapper;
     }
 
@@ -61,6 +65,7 @@ public class McpServerConfig {
         return McpServer.async(sseServerTransport())
                 .serverInfo("mcp-bancolombia", "1.0.0")
                 .capabilities(capabilities)
+                .resourceTemplates(templates)
                 .resources(resources)
                 .prompts(prompts)
                 .tools(tools)

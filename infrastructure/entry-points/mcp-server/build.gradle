@@ -16,6 +16,5 @@ dependencies {
     // Reactivo
     implementation "org.springframework.boot:spring-boot-starter-webflux"
 
-    implementation "io.modelcontextprotocol.sdk:mcp-spring-webflux"
 
 }
