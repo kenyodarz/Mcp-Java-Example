@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.modelcontextprotocol.server.McpAsyncServer;
 import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.McpServerFeatures;
-import io.modelcontextprotocol.server.transport.WebFluxSseServerTransportProvider;
+import io.modelcontextprotocol.server.transport.WebFluxStreamableServerTransportProvider;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.ServerCapabilities;
 import java.util.List;
@@ -37,32 +37,35 @@ public class McpServerConfig {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Configuración del transporte HTTP Streamable.
+     * Usa application/json-stream y respuestas chunked.
+     */
     @Bean
-    public WebFluxSseServerTransportProvider sseServerTransport() {
-        return WebFluxSseServerTransportProvider.builder()
-                .sseEndpoint("/sse")
-                .messageEndpoint("/mcp/messages")
+    public WebFluxStreamableServerTransportProvider streamableServerTransport() {
+        return WebFluxStreamableServerTransportProvider.builder()
+                .messageEndpoint("/mcp/stream")
                 .objectMapper(objectMapper)
                 .build();
     }
 
     @Bean
-    public RouterFunction<?> mcpRouterFunction(WebFluxSseServerTransportProvider transport) {
+    public RouterFunction<?> mcpRouterFunction(WebFluxStreamableServerTransportProvider transport) {
         return transport.getRouterFunction();
     }
 
     @Bean
-    public McpAsyncServer mcpAsyncServer() {
+    public McpAsyncServer mcpAsyncServer(WebFluxStreamableServerTransportProvider transport) {
 
         var capabilities = ServerCapabilities.builder()
-                .resources(false, true) // Allow resources to be registered
-                .tools(true) // Allow tools to be registered
-                .prompts(true) // Allow prompts to be registered
-                .logging() // Enable logging
-                .completions() // Enable completions
+                .resources(false, true) // habilita recursos
+                .tools(true)            // habilita tools
+                .prompts(true)          // habilita prompts
+                .logging()              // habilita logging
+                .completions()          // habilita completions
                 .build();
 
-        return McpServer.async(sseServerTransport())
+        return McpServer.async(transport)
                 .serverInfo("mcp-bancolombia", "1.0.0")
                 .capabilities(capabilities)
                 .resourceTemplates(templates)
