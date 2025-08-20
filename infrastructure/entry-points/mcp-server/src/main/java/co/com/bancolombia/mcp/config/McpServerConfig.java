@@ -49,6 +49,7 @@ public class McpServerConfig {
                 .build();
     }
 
+    @SuppressWarnings("java:S1452")
     @Bean
     public RouterFunction<?> mcpRouterFunction(WebFluxStreamableServerTransportProvider transport) {
         return transport.getRouterFunction();

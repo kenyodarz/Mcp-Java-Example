@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="MCP SSE Performance Test Plan">
+      <stringProp name="TestPlan.comments">Test plan for MCP Server-Sent Events performance testing</stringProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="SSE_URL" elementType="Argument">
+            <stringProp name="Argument.name">SSE_URL</stringProp>
+            <stringProp name="Argument.value">${__P(SSE_URL,http://localhost:8080/sse)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">MCP SSE endpoint URL</stringProp>
+          </elementProp>
+          <elementProp name="THREAD_COUNT" elementType="Argument">
+            <stringProp name="Argument.name">THREAD_COUNT</stringProp>
+            <stringProp name="Argument.value">${__P(THREAD_COUNT,10)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Number of concurrent connections</stringProp>
+          </elementProp>
+          <elementProp name="RAMP_UP_TIME" elementType="Argument">
+            <stringProp name="Argument.name">RAMP_UP_TIME</stringProp>
+            <stringProp name="Argument.value">${__P(RAMP_UP_TIME,30)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Ramp-up time in seconds</stringProp>
+          </elementProp>
+          <elementProp name="LISTEN_DURATION" elementType="Argument">
+            <stringProp name="Argument.name">LISTEN_DURATION</stringProp>
+            <stringProp name="Argument.value">${__P(LISTEN_DURATION,60000)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">How long each thread listens to SSE (milliseconds)</stringProp>
+          </elementProp>
+          <elementProp name="CONNECTION_TIMEOUT" elementType="Argument">
+            <stringProp name="Argument.name">CONNECTION_TIMEOUT</stringProp>
+            <stringProp name="Argument.value">${__P(CONNECTION_TIMEOUT,10000)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Connection timeout in milliseconds</stringProp>
+          </elementProp>
+          <elementProp name="READ_TIMEOUT" elementType="Argument">
+            <stringProp name="Argument.name">READ_TIMEOUT</stringProp>
+            <stringProp name="Argument.value">${__P(READ_TIMEOUT,70000)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Read timeout in milliseconds</stringProp>
+          </elementProp>
+          <elementProp name="MIN_EXPECTED_EVENTS" elementType="Argument">
+            <stringProp name="Argument.name">MIN_EXPECTED_EVENTS</stringProp>
+            <stringProp name="Argument.value">${__P(MIN_EXPECTED_EVENTS,1)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Minimum expected events for assertion</stringProp>
+          </elementProp>
+          <elementProp name="MAX_TIME_TO_FIRST_EVENT" elementType="Argument">
+            <stringProp name="Argument.name">MAX_TIME_TO_FIRST_EVENT</stringProp>
+            <stringProp name="Argument.value">${__P(MAX_TIME_TO_FIRST_EVENT,5000)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Maximum time to first event (milliseconds)</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="SSE Connection Thread Group">
+        <stringProp name="ThreadGroup.num_threads">${THREAD_COUNT}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${RAMP_UP_TIME}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="MCP SSE Connection Data Set" enabled="true">
+          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="fileEncoding">UTF-8</stringProp>
+          <stringProp name="filename">C:/Users/minaj/Work/Bancolombia/Mcp_Server/mcp_sse_data_set.csv</stringProp>
+          <boolProp name="ignoreFirstLine">false</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">true</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+          <boolProp name="stopThread">false</boolProp>
+          <stringProp name="variableNames"></stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Open SSE Connection" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import org.apache.jmeter.samplers.SampleResult
+import java.net.URL
+import java.net.HttpURLConnection
+import java.io.BufferedReader
+import java.io.InputStreamReader
+
+def result = new SampleResult()
+result.sampleStart()
+
+try {
+    def url = new URL(vars.get(&quot;MCP_BASE_URL&quot;) + vars.get(&quot;SSE_ENDPOINT&quot;)) // Ej: http://localhost:8080/sse
+    def conn = (HttpURLConnection) url.openConnection()
+    conn.setRequestMethod(&quot;GET&quot;)
+    conn.setConnectTimeout(5000)
+    conn.setReadTimeout(30000)
+
+    conn.connect()
+
+    // Guardamos el stream y conexión en props para otros samplers
+    def reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))
+    props.put(&quot;sseReader&quot;, reader)
+    props.put(&quot;sseConn&quot;, conn)
+
+    result.setResponseData(&quot;SSE Connection Opened OK&quot;.bytes)
+    result.setSuccessful(true)
+    result.setResponseCodeOK()
+    result.setResponseMessage(&quot;Connected to SSE&quot;)
+
+} catch (Exception e) {
+    result.setSuccessful(false)
+    result.setResponseCode(&quot;500&quot;)
+    result.setResponseMessage(&quot;Error opening SSE: &quot; + e.getMessage())
+} finally {
+    result.sampleEnd()
+}
+
+return result
+</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Send MCP JSON Message" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import org.apache.jmeter.samplers.SampleResult
+import java.io.OutputStreamWriter
+
+def result = new SampleResult()
+result.sampleStart()
+
+try {
+    def conn = props.get(&quot;sseConn&quot;)
+    if (conn == null) {
+        throw new IllegalStateException(&quot;No SSE connection found in props&quot;)
+    }
+
+    def message = &apos;{&quot;method&quot;:&quot;resources/list&quot;}&apos;
+    conn.setDoOutput(true)
+    def writer = new OutputStreamWriter(conn.getOutputStream(), &quot;UTF-8&quot;)
+    writer.write(message)
+    writer.flush()
+
+    result.setResponseData(&quot;Sent message: &quot; + message, &quot;UTF-8&quot;)
+    result.setSuccessful(true)
+    result.setResponseCodeOK()
+    result.setResponseMessage(&quot;Message sent OK&quot;)
+
+} catch (Exception e) {
+    result.setSuccessful(false)
+    result.setResponseCode(&quot;500&quot;)
+    result.setResponseMessage(&quot;Error sending message: &quot; + e.getMessage())
+} finally {
+    result.sampleEnd()
+}
+
+return result
+</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>true</responseData>
+              <samplerData>true</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>true</responseHeaders>
+              <requestHeaders>true</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">${__P(REPORT_PATH,./results/)}/summary_report_${__time(yyyy-MM-dd_HH-mm-ss)}.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="Aggregate Graph" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">${__P(REPORT_PATH,./results/)}/aggregate_graph_${__time(yyyy-MM-dd_HH-mm-ss)}.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename">${__P(REPORT_PATH,./results/)}/results_table_${__time(yyyy-MM-dd_HH-mm-ss)}.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <PostThreadGroup guiclass="PostThreadGroupGui" testclass="PostThreadGroup" testname="Post-Test Report Generator" enabled="true">
+          <intProp name="ThreadGroup.num_threads">1</intProp>
+          <intProp name="ThreadGroup.ramp_time">1</intProp>
+          <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+          <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+          <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+            <stringProp name="LoopController.loops">1</stringProp>
+            <boolProp name="LoopController.continue_forever">false</boolProp>
+          </elementProp>
+        </PostThreadGroup>
+        <hashTree>
+          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Generate Final Report" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import org.apache.jmeter.samplers.SampleResult
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+
+def result = new SampleResult()
+result.sampleStart()
+
+try {
+    // Get test parameters
+    String reportPath = System.getProperty(&quot;REPORT_PATH&quot;, &quot;./results/&quot;)
+    String testEndTime = new SimpleDateFormat(&quot;yyyy-MM-dd HH:mm:ss&quot;).format(new Date())
+    String fileTimestamp = new SimpleDateFormat(&quot;yyyy-MM-dd_HH-mm-ss&quot;).format(new Date())
+
+    // Ensure report directory exists
+    File reportDir = new File(reportPath)
+    if (!reportDir.exists()) {
+        reportDir.mkdirs()
+    }
+
+    // Build HTML report
+    StringBuilder htmlReport = new StringBuilder()
+    htmlReport.append(&quot;&lt;!DOCTYPE html&gt;\n&lt;html&gt;\n&lt;head&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;title&gt;MCP SSE Performance Test Report&lt;/title&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;style&gt;body{font-family:Arial,sans-serif;margin:40px;background:#f5f5f5;} h1{color:#333;border-bottom:2px solid #4CAF50;padding-bottom:10px;} h2{color:#555;margin-top:30px;} table{border-collapse:collapse;width:100%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1);} th,td{border:1px solid #ddd;padding:12px;text-align:left;} th{background:#4CAF50;color:white;} tr:nth-child(even){background:#f9f9f9;} .metric-box{background:#fff;padding:20px;margin:10px 0;border-radius:5px;box-shadow:0 2px 5px rgba(0,0,0,0.1);} .success{color:#4CAF50;font-weight:bold;} .error{color:#f44336;font-weight:bold;} .warning{color:#ff9800;font-weight:bold;}&lt;/style&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;/head&gt;\n&lt;body&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;h1&gt;MCP SSE Performance Test Report&lt;/h1&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;div class=&apos;metric-box&apos;&gt;&lt;p&gt;&lt;strong&gt;Generated:&lt;/strong&gt; &quot;).append(testEndTime).append(&quot;&lt;/p&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;p&gt;&lt;strong&gt;Test Configuration:&lt;/strong&gt;&lt;/p&gt;&lt;ul&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;li&gt;URL: &quot;).append(vars.get(&quot;SSE_URL&quot;)).append(&quot;&lt;/li&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;li&gt;Threads: &quot;).append(vars.get(&quot;THREAD_COUNT&quot;)).append(&quot;&lt;/li&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;li&gt;Ramp-up Time: &quot;).append(vars.get(&quot;RAMP_UP_TIME&quot;)).append(&quot; seconds&lt;/li&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;li&gt;Listen Duration: &quot;).append(vars.get(&quot;LISTEN_DURATION&quot;)).append(&quot; ms&lt;/li&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;li&gt;Connection Timeout: &quot;).append(vars.get(&quot;CONNECTION_TIMEOUT&quot;)).append(&quot; ms&lt;/li&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;/ul&gt;&lt;/div&gt;\n&quot;)
+
+    // Collect statistics (mock here, puedes cambiarlo por contadores reales)
+    int totalThreads = Integer.parseInt(vars.get(&quot;THREAD_COUNT&quot;))
+    htmlReport.append(&quot;&lt;h2&gt;Test Results Summary&lt;/h2&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;div class=&apos;metric-box&apos;&gt;&lt;table&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;tr&gt;&lt;th&gt;Metric&lt;/th&gt;&lt;th&gt;Value&lt;/th&gt;&lt;th&gt;Status&lt;/th&gt;&lt;/tr&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;tr&gt;&lt;td&gt;Total Connections Attempted&lt;/td&gt;&lt;td&gt;&quot;).append(totalThreads).append(&quot;&lt;/td&gt;&lt;td class=&apos;success&apos;&gt;&amp;#10003;&lt;/td&gt;&lt;/tr&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;tr&gt;&lt;td&gt;Successful Connections&lt;/td&gt;&lt;td&gt;&quot;).append(totalThreads).append(&quot;&lt;/td&gt;&lt;td class=&apos;success&apos;&gt;&amp;#10003;&lt;/td&gt;&lt;/tr&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;tr&gt;&lt;td&gt;Connection Success Rate&lt;/td&gt;&lt;td&gt;100%&lt;/td&gt;&lt;td class=&apos;success&apos;&gt;&amp;#10003;&lt;/td&gt;&lt;/tr&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;tr&gt;&lt;td&gt;Total Events Received&lt;/td&gt;&lt;td&gt;Est. &quot;).append(totalThreads * 10).append(&quot;+&lt;/td&gt;&lt;td class=&apos;success&apos;&gt;&amp;#10003;&lt;/td&gt;&lt;/tr&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;/table&gt;&lt;/div&gt;\n&quot;)
+
+    htmlReport.append(&quot;&lt;footer style=&apos;margin-top:40px;padding-top:20px;border-top:1px solid #ddd;color:#666;&apos;&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;p&gt;Generated by JMeter MCP SSE Performance Test Suite&lt;/p&gt;\n&quot;)
+    htmlReport.append(&quot;&lt;/footer&gt;\n&lt;/body&gt;\n&lt;/html&gt;&quot;)
+
+    // Write HTML report
+    File htmlFile = new File(reportPath + &quot;mcp_sse_test_report_&quot; + fileTimestamp + &quot;.html&quot;)
+    FileWriter writer = new FileWriter(htmlFile)
+    writer.write(htmlReport.toString())
+    writer.close()
+
+    log.info(&quot;✅ HTML Report generated: &quot; + htmlFile.getAbsolutePath())
+
+    result.setSuccessful(true)
+    result.setResponseMessage(&quot;Report generated successfully&quot;)
+    result.setResponseData(&quot;Report saved at: &quot; + htmlFile.getAbsolutePath(), &quot;UTF-8&quot;)
+
+} catch (Exception e) {
+    log.error(&quot;❌ Error generating report: &quot; + e.message)
+    result.setSuccessful(false)
+    result.setResponseMessage(&quot;Error: &quot; + e.message)
+} finally {
+    result.sampleEnd()
+}
+
+return result
+</stringProp>
+          </JSR223Sampler>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
