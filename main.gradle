@@ -5,28 +5,6 @@ allprojects {
         mavenCentral()
         maven { url = "https://repo.spring.io/snapshot" }
         maven { url = "https://repo.spring.io/milestone" }
-
-        configurations.configureEach {
-            resolutionStrategy {
-                force(
-                        'io.modelcontextprotocol.sdk:mcp:0.11.2',
-                        'io.modelcontextprotocol.sdk:mcp-spring-webflux:0.11.2',
-                )
-
-                eachDependency { details ->
-                    if (details.requested.group == 'io.modelcontextprotocol.sdk' &&
-                            details.requested.name == 'mcp') {
-                        details.useVersion '0.11.2'
-                    }
-                    if (details.requested.group == 'io.modelcontextprotocol.sdk' &&
-                            details.requested.name == 'mcp-spring-webflux') {
-                        details.useVersion '0.11.2'
-                    }
-                }
-
-
-            }
-        }
     }
 }
 

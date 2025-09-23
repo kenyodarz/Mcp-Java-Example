@@ -3,30 +3,15 @@ dependencies {
     implementation project(':usecase')
     implementation 'org.springframework:spring-context'
 
-    implementation platform("org.springframework.ai:spring-ai-bom:1.0.1")
+    implementation platform("org.springframework.ai:spring-ai-bom:1.1.0-M1")
 
     // MCP Server WebFlux (SSE) + opción de STDIO
-    implementation "org.springframework.ai:spring-ai-mcp:1.0.1"
-    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webflux:1.0.1") {
-        exclude group: "io.modelcontextprotocol.sdk", module: "mcp"
-        exclude group: "io.modelcontextprotocol.sdk", module: "mcp-spring-webflux"
-    }
-
-    // MCP Server WebFlux + Model Context Protocol
-    implementation 'io.modelcontextprotocol.sdk:mcp-spring-webflux:0.11.2'
-    implementation 'io.modelcontextprotocol.sdk:mcp:0.11.2'
+    implementation "org.springframework.ai:spring-ai-mcp:1.1.0-M1"
+    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webflux:1.1.0-M1")
 
     // Reactivo
     implementation "org.springframework.boot:spring-boot-starter-webflux"
 
-    constraints {
-        implementation('io.modelcontextprotocol.sdk:mcp-spring-webflux') {
-            version { strictly '0.11.2' }
-        }
-        implementation('io.modelcontextprotocol.sdk:mcp') {
-            version { strictly '0.11.2' }
-        }
-    }
 
 }
 

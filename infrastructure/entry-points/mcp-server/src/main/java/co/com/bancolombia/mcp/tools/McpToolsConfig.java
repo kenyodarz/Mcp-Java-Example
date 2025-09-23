@@ -1,6 +1,6 @@
 package co.com.bancolombia.mcp.tools;
 
-import io.modelcontextprotocol.server.McpServerFeatures;
+import io.modelcontextprotocol.server.McpStatelessServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -20,38 +20,38 @@ public class McpToolsConfig {
     }
 
     @Bean
-    public List<McpServerFeatures.AsyncToolSpecification> mcpTools() {
+    public List<McpStatelessServerFeatures.AsyncToolSpecification> mcpTools() {
         log.info("Creating mcpTools bean...");
 
-        McpSchema.Tool saludoTool = new McpSchema.Tool(
-                "saludoTool",
-                "Devuelve un saludo reactivo",
-                """
-                {
-                  "type": "object",
-                  "properties": {
-                    "name": { "type": "string" }
-                  },
-                  "required": ["name"]
-                }
-                """
-        );
+        McpSchema.Tool saludoTool = McpSchema.Tool.builder()
+                .name("saludoTool")
+                .title("Saludo Tool") // opcional
+                .description("Devuelve un saludo reactivo")
+                .inputSchema("""
+                        {
+                          "type": "object",
+                          "properties": {
+                            "name": { "type": "string" }
+                          },
+                          "required": ["name"]
+                        }
+                        """)
+                .build();
 
-
-        McpSchema.Tool healthCheckTool = new McpSchema.Tool(
-                "healthCheck",
-                "Retorna 'OK' para health checks",
-                """
-                {
-                  "type": "object",
-                  "properties": {}
-                }
-                """
-        );
-
+        McpSchema.Tool healthCheckTool = McpSchema.Tool.builder()
+                .name("healthCheck")
+                .title("Health Check Tool") // opcional, puedes omitirlo si no quieres título distinto
+                .description("Retorna 'OK' para health checks")
+                .inputSchema("""
+                        {
+                          "type": "object",
+                          "properties": {}
+                        }
+                        """)
+                .build();
 
         return List.of(
-                new McpServerFeatures.AsyncToolSpecification(
+                new McpStatelessServerFeatures.AsyncToolSpecification(
                         saludoTool,
                         (exchange, input) -> {
                             log.info("Executing saludoTool with input: {}", input);
@@ -61,7 +61,7 @@ public class McpToolsConfig {
                             );
                         }
                 ),
-                new McpServerFeatures.AsyncToolSpecification(
+                new McpStatelessServerFeatures.AsyncToolSpecification(
                         healthCheckTool,
                         (exchange, input) -> {
                             log.info("Executing healthCheck tool");

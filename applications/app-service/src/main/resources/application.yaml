@@ -9,20 +9,20 @@ spring:
   ai:
     mcp:
       server:
+        protocol: STATELESS
         name: mcp-bancolombia
         version: 1.0.0
         # Tipo ASYNC recomendado para reactivo
         type: ASYNC
         instructions: "MCP reactivo con tools, resources y prompts"
         # Activar ambos transportes:
-        stdio: true                           # STDIO
-        sse-endpoint: /sse                    # HTTP SSE (lectura stream)
-        sse-message-endpoint: /mcp/messages   # HTTP (POST JSON-RPC)
+        streamable-http:
+          mcp-endpoint: /mcp/stream
         capabilities:
           tool: true
           resource: true
           prompt: true
-          completion: true
+          completion: false
         request-timeout: 20s
   h2:
     console:
