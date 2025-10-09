@@ -152,18 +152,16 @@ class HealthToolTest {
         // When & Then
         StepVerifier.create(spec1.callHandler().apply(null, null))
                 .assertNext(result -> {
-                    McpSchema.CallToolResult callResult = (McpSchema.CallToolResult) result;
-                    McpSchema.TextContent textContent = (McpSchema.TextContent) callResult.content()
-                            .get(0);
+                    McpSchema.TextContent textContent = (McpSchema.TextContent) ((McpSchema.CallToolResult) result).content()
+                            .getFirst();
                     assertThat(textContent.text()).isEqualTo("OK");
                 })
                 .verifyComplete();
 
         StepVerifier.create(spec2.callHandler().apply(null, null))
                 .assertNext(result -> {
-                    McpSchema.CallToolResult callResult = (McpSchema.CallToolResult) result;
-                    McpSchema.TextContent textContent = (McpSchema.TextContent) callResult.content()
-                            .get(0);
+                    McpSchema.TextContent textContent = (McpSchema.TextContent) ((McpSchema.CallToolResult) result).content()
+                            .getFirst();
                     assertThat(textContent.text()).isEqualTo("OK");
                 })
                 .verifyComplete();
