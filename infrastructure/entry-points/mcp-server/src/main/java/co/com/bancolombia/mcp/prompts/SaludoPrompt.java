@@ -6,32 +6,30 @@ import io.modelcontextprotocol.spec.McpSchema.PromptMessage;
 import io.modelcontextprotocol.spec.McpSchema.Role;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import java.util.List;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@Configuration
-public class McpPromptsConfig {
+@Component
+public class SaludoPrompt {
 
-    @Bean
-    public List<McpStatelessServerFeatures.AsyncPromptSpecification> prompts() {
+    public McpStatelessServerFeatures.AsyncPromptSpecification getPromptSpecification() {
+
         var promptMeta = new McpSchema.Prompt(
                 "saludo",
                 "Un prompt de saludo personalizable",
                 List.of(new McpSchema.PromptArgument("nombre", "Nombre a saludar", true))
         );
 
-        var asyncSpec = new McpStatelessServerFeatures.AsyncPromptSpecification(
+        return new McpStatelessServerFeatures.AsyncPromptSpecification(
                 promptMeta,
                 (exchange, req) -> {
                     String nombre = (String) req.arguments().getOrDefault("nombre", "amigo");
                     PromptMessage userMsg = new PromptMessage(Role.USER,
                             new TextContent("Hola " + nombre + ", ¿en qué te ayudo?"));
                     return Mono.just(
-                            new McpSchema.GetPromptResult("Saludo base", List.of(userMsg)));
+                            new McpSchema.GetPromptResult("Saludo base", List.of(userMsg))
+                    );
                 }
         );
-
-        return List.of(asyncSpec);
     }
 }
