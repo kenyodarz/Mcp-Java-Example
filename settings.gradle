@@ -22,3 +22,5 @@ project(':model').projectDir = file('./domain/model')
 project(':usecase').projectDir = file('./domain/usecase')
 include ':mcp-server'
 project(':mcp-server').projectDir = file('./infrastructure/entry-points/mcp-server')
+include ':rest-consumer'
+project(':rest-consumer').projectDir = file('./infrastructure/driven-adapters/rest-consumer')

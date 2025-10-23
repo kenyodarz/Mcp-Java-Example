@@ -2,6 +2,8 @@ package co.com.bancolombia.mcp.tools;
 
 import io.modelcontextprotocol.server.McpStatelessServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
+import java.util.List;
+import java.util.Map;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -20,12 +22,14 @@ public class HealthTool {
                 .name("healthCheck")
                 .title("Health Check Tool")
                 .description("Retorna 'OK' para health checks")
-                .inputSchema("""
-                        {
-                          "type": "object",
-                          "properties": {}
-                        }
-                        """)
+                .inputSchema(new McpSchema.JsonSchema(
+                        "object", // type
+                        Map.of(), // properties
+                        List.of(), // required
+                        false, // additionalProperties
+                        Map.of(), // $defs
+                        Map.of()  // definitions
+                ))
                 .build();
 
         return new McpStatelessServerFeatures.AsyncToolSpecification(

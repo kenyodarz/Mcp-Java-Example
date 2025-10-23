@@ -2,6 +2,8 @@ package co.com.bancolombia.mcp.tools;
 
 import io.modelcontextprotocol.server.McpStatelessServerFeatures;
 import io.modelcontextprotocol.spec.McpSchema;
+import java.util.List;
+import java.util.Map;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -19,15 +21,19 @@ public class SaludoTool {
                 .name("saludoTool")
                 .title("Saludo Tool")
                 .description("Devuelve un saludo reactivo")
-                .inputSchema("""
-                        {
-                          "type": "object",
-                          "properties": {
-                            "name": { "type": "string" }
-                          },
-                          "required": ["name"]
-                        }
-                        """)
+                .inputSchema(new McpSchema.JsonSchema(
+                        "object", // type
+                        Map.of(   // properties
+                                "name", Map.of(
+                                        "type", "string",
+                                        "description", "Nombre de la persona a saludar"
+                                )
+                        ),
+                        List.of("name"), // required
+                        false,           // additionalProperties
+                        Map.of(),        // $defs
+                        Map.of()         // definitions
+                ))
                 .build();
 
         return new McpStatelessServerFeatures.AsyncToolSpecification(

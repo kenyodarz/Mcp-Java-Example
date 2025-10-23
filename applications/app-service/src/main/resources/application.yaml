@@ -1,37 +1,62 @@
-##Spring Configuration
 server:
   port: 8080
 spring:
   application:
-    name: mcp
+    name: "mcp"
   devtools:
     add-properties: false
   ai:
     mcp:
       server:
-        protocol: STATELESS
-        name: mcp-bancolombia
-        version: 1.0.0
-        # Tipo ASYNC recomendado para reactivo
-        type: ASYNC
+        protocol: "STATELESS"
+        name: "mcp-bancolombia"
+        version: "1.0.0"
+        type: "ASYNC"
         instructions: "MCP reactivo con tools, resources y prompts"
-        # Activar ambos transportes:
         streamable-http:
-          mcp-endpoint: /mcp/stream
+          mcp-endpoint: "/mcp/stream"
         capabilities:
           tool: true
           resource: true
           prompt: true
           completion: false
-        request-timeout: 20s
+        request-timeout: "20s"
   h2:
     console:
       enabled: true
-      path: /h2
+      path: "/h2"
   profiles:
-    include:
-
+    include: null
 logging:
   level:
-    io.modelcontextprotocol: DEBUG
-    org.springframework.ai.mcp: DEBUG
+    io.modelcontextprotocol: "DEBUG"
+    org.springframework.ai.mcp: "DEBUG"
+adapter:
+  restconsumer:
+    timeout: 5000
+    url: "https://thesimpsonsapi.com/api"
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+resilience4j:
+  circuitbreaker:
+    instances:
+      testGet:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: "2s"
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: "10s"
+      testPost:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: "2s"
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: "10s"
