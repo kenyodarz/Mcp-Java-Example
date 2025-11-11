@@ -35,6 +35,11 @@ adapter:
   restconsumer:
     timeout: 5000
     url: "https://thesimpsonsapi.com/api"
+    headers:
+      Authorization: "Bearer token123"
+      X-App-Name: "MiAplicacion"
+      Accept: "application/json"
+      Content-Type: "application/json"
 management:
   health:
     circuitbreakers:

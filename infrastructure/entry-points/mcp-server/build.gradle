@@ -3,11 +3,11 @@ dependencies {
     implementation project(':usecase')
     implementation 'org.springframework:spring-context'
 
-    implementation platform("org.springframework.ai:spring-ai-bom:1.1.0-M3")
+    implementation platform("org.springframework.ai:spring-ai-bom:1.1.0-RC1")
 
     // MCP Server WebFlux
-    implementation "org.springframework.ai:spring-ai-mcp:1.1.0-M3"
-    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webflux:1.1.0-M3")
+    implementation "org.springframework.ai:spring-ai-mcp:1.1.0-RC1"
+    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webflux:1.1.0-RC1")
 
     // Reactivo
     implementation "org.springframework.boot:spring-boot-starter-webflux"
