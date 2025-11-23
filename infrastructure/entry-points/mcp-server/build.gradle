@@ -3,16 +3,23 @@ dependencies {
     implementation project(':usecase')
     implementation 'org.springframework:spring-context'
 
-    implementation platform("org.springframework.ai:spring-ai-bom:1.1.0-RC1")
+    // Spring AI BOM - versión estable
+    implementation platform("org.springframework.ai:spring-ai-bom:${springAiVersion}")
 
     // MCP Server WebFlux
-    implementation "org.springframework.ai:spring-ai-mcp:1.1.0-RC1"
-    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webflux:1.1.0-RC1")
+    implementation "org.springframework.ai:spring-ai-mcp:${springAiVersion}"
+    implementation "org.springframework.ai:spring-ai-starter-mcp-server-webflux:${springAiVersion}"
 
     // Reactivo
     implementation "org.springframework.boot:spring-boot-starter-webflux"
 
+    // Jackson para serialización JSON
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
+    // Validación
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+
+    // Test
+    testImplementation "org.springframework.ai:spring-ai-test"
 }
-
-
