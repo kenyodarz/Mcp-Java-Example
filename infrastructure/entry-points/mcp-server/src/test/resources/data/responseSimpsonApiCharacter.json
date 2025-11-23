@@ -1,0 +1,14 @@
+{
+  "id": 1,
+  "age": 39,
+  "birthdate": "1956-05-12",
+  "gender": "Male",
+  "name": "Homer Simpson",
+  "occupation": "Safety Inspector",
+  "portraitPath": "/character/1.webp",
+  "status": "Alive",
+  "phrases": [
+    "Doh!",
+    "Woo-hoo!"
+  ]
+}
