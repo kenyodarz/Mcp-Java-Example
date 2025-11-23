@@ -21,6 +21,8 @@ spring:
           prompt: true
           completion: false
         request-timeout: "20s"
+        annotation-scanner:
+          enabled: true
   h2:
     console:
       enabled: true

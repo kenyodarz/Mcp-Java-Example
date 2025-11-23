@@ -1,24 +1,25 @@
 package co.com.bancolombia.mcp.resources;
 
-import co.com.bancolombia.mcp.response.ErrorResponse;
 import co.com.bancolombia.model.userinfo.UserInfo;
 import co.com.bancolombia.usecase.GetUserInfoUseCase;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.modelcontextprotocol.common.McpTransportContext;
-import io.modelcontextprotocol.server.McpStatelessServerFeatures.AsyncResourceTemplateSpecification;
-import io.modelcontextprotocol.spec.McpSchema;
-import java.time.Duration;
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
+import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import java.util.List;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springaicommunity.mcp.annotation.McpResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
-import reactor.util.retry.Retry;
 
 /**
- * Resource para obtener información de usuarios Implementa caché y manejo de errores mejorado
+ * Resource de información de usuario usando anotaciones MCP con template URI
+ * <p>
+ * Con @McpResource y {userId}, Spring AI automáticamente: - Registra el resource template - Extrae
+ * el parámetro de la URI - Inyecta el parámetro en el metodo
+ * <p>
+ * IMPORTANTE: Para ASYNC server, el metodo debe retornar Mono<ReadResourceResult>
  */
 @Slf4j
 @Component
@@ -30,143 +31,98 @@ public class UserInfoResource {
     public UserInfoResource(ObjectMapper objectMapper, GetUserInfoUseCase getUserInfoUseCase) {
         this.objectMapper = objectMapper;
         this.getUserInfoUseCase = getUserInfoUseCase;
-        log.info("UserInfoResource inicializado correctamente");
     }
 
-    public AsyncResourceTemplateSpecification getResourceSpecification() {
-        log.debug("Creando especificación para UserInfoResource");
+    @McpResource(
+            uri = "resource://users/{userId}",
+            name = "user-info",
+            description = "Obtiene información detallada de un usuario por su ID desde la API de Simpsons"
+    )
+    public Mono<ReadResourceResult> getUserInfo(String userId) {
+        log.info("📥 Solicitud de información para userId: {}", userId);
 
-        // Definición del template del resource
-        McpSchema.ResourceTemplate userResource = McpSchema.ResourceTemplate.builder()
-                .uriTemplate("resource://users/{userId}")
-                .name("user-info")
-                .title("Información del Usuario")
-                .description(
-                        "Obtiene información detallada de un usuario por su ID desde la API de Simpsons")
-                .mimeType(MediaType.APPLICATION_JSON_VALUE)
-                .build();
-
-        return new AsyncResourceTemplateSpecification(
-                userResource,
-                (McpTransportContext ctx, McpSchema.ReadResourceRequest request) -> {
-                    log.info("Solicitud de recurso recibida: {}", request.uri());
-
-                    return extractUserId(request.uri())
-                            .flatMap(this::fetchUserInfo)
-                            .map(userInfo -> createResourceResult(request.uri(), userInfo))
-                            .timeout(Duration.ofSeconds(10))
-                            .retryWhen(Retry.backoff(3, Duration.ofMillis(500))
-                                    .maxBackoff(Duration.ofSeconds(2))
-                                    .filter(throwable -> !(throwable instanceof IllegalArgumentException))
-                                    .doBeforeRetry(retrySignal ->
-                                            log.warn(
-                                                    "Reintentando obtener información del usuario, intento: {}",
-                                                    retrySignal.totalRetries() + 1))
-                            )
-                            .onErrorResume(this::handleError)
-                            .subscribeOn(Schedulers.boundedElastic());
-                }
-        );
+        return parseUserId(userId)
+                .flatMap(id -> {
+                    log.debug("🔍 Obteniendo información del usuario: {}", id);
+                    return getUserInfoUseCase.execute(id);
+                })
+                .map(userInfo -> {
+                    log.info("✅ Información del usuario {} obtenida exitosamente", userId);
+                    return createResourceResult(userId, userInfo);
+                })
+                .onErrorResume(error -> {
+                    log.error("❌ Error al obtener información del usuario {}: {}", userId,
+                            error.getMessage());
+                    return Mono.just(createErrorResult(userId, error));
+                });
     }
 
     /**
-     * Extrae el userId de la URI del request
+     * Parsea el userId desde String a Integer
      */
-    private Mono<Integer> extractUserId(String uri) {
+    private Mono<Integer> parseUserId(String userIdStr) {
         return Mono.fromCallable(() -> {
             try {
-                String userIdStr = uri.replace("resource://users/", "").trim();
-
-                if (userIdStr.isEmpty()) {
-                    throw new IllegalArgumentException("El userId no puede estar vacío");
-                }
-
                 int userId = Integer.parseInt(userIdStr);
-
                 if (userId <= 0) {
                     throw new IllegalArgumentException("El userId debe ser un número positivo");
                 }
-
-                log.debug("UserId extraído exitosamente: {}", userId);
                 return userId;
-
             } catch (NumberFormatException e) {
-                String errorMsg = "El userId debe ser un número válido";
-                log.error(errorMsg, e);
-                throw new IllegalArgumentException(errorMsg, e);
+                throw new IllegalArgumentException(
+                        "El userId debe ser un número válido: " + userIdStr);
             }
         });
     }
 
     /**
-     * Obtiene la información del usuario usando el use case
+     * Crea el resultado exitoso del resource
      */
-    private Mono<UserInfo> fetchUserInfo(Integer userId) {
-        log.debug("Obteniendo información del usuario: {}", userId);
-
-        return getUserInfoUseCase.execute(userId)
-                .doOnSuccess(
-                        userInfo -> log.info("Información del usuario {} obtenida exitosamente",
-                                userId))
-                .doOnError(error -> log.error("Error al obtener información del usuario {}", userId,
-                        error))
-                .switchIfEmpty(Mono.error(
-                        new IllegalArgumentException("Usuario no encontrado con ID: " + userId))
-                );
+    private ReadResourceResult createResourceResult(String userId, UserInfo userInfo) {
+        return new ReadResourceResult(
+                List.of(new TextResourceContents(
+                        "resource://users/" + userId,
+                        MediaType.APPLICATION_JSON_VALUE,
+                        toJson(userInfo)
+                ))
+        );
     }
 
     /**
-     * Crea el resultado del resource
+     * Crea el resultado de error
      */
-    private McpSchema.ReadResourceResult createResourceResult(String uri, UserInfo userInfo) {
-        try {
-            String jsonContent = objectMapper
-                    .writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(userInfo);
-
-            McpSchema.TextResourceContents content = new McpSchema.TextResourceContents(
-                    uri,
-                    MediaType.APPLICATION_JSON_VALUE,
-                    jsonContent
-            );
-
-            log.debug("Resultado del recurso creado exitosamente para URI: {}", uri);
-            return new McpSchema.ReadResourceResult(List.of(content));
-
-        } catch (JsonProcessingException e) {
-            log.error("Error al serializar UserInfo a JSON", e);
-            throw new RuntimeException("Error al crear respuesta JSON", e);
-        }
-    }
-
-    /**
-     * Maneja los errores de forma consistente
-     */
-    private Mono<McpSchema.ReadResourceResult> handleError(Throwable error) {
-        log.error("Error al procesar el recurso de usuario", error);
-
+    private ReadResourceResult createErrorResult(String userId, Throwable error) {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .error(true)
                 .message(error.getMessage())
                 .type(error.getClass().getSimpleName())
+                .userId(userId)
                 .build();
 
-        try {
-            String errorJson = objectMapper
-                    .writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(errorResponse);
+        return new ReadResourceResult(
+                List.of(new TextResourceContents(
+                        "resource://users/" + userId,
+                        MediaType.APPLICATION_JSON_VALUE,
+                        toJson(errorResponse)
+                ))
+        );
+    }
 
-            McpSchema.TextResourceContents errorContent = new McpSchema.TextResourceContents(
-                    "resource://error",
-                    MediaType.APPLICATION_JSON_VALUE,
-                    errorJson
-            );
+    @SneakyThrows
+    private String toJson(Object object) {
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+    }
 
-            return Mono.just(new McpSchema.ReadResourceResult(List.of(errorContent)));
+    /**
+     * Clase para representar errores
+     */
+    @lombok.Data
+    @lombok.Builder
+    private static class ErrorResponse {
 
-        } catch (JsonProcessingException e) {
-            log.error("Error crítico al crear respuesta de error", e);
-            return Mono.error(e);
-        }
+        private boolean error;
+        private String message;
+        private String type;
+        private String userId;
     }
 }

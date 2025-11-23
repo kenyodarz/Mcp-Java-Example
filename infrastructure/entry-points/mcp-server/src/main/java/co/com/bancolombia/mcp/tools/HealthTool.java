@@ -1,45 +1,22 @@
 package co.com.bancolombia.mcp.tools;
 
-import io.modelcontextprotocol.server.McpStatelessServerFeatures;
-import io.modelcontextprotocol.spec.McpSchema;
-import java.util.List;
-import java.util.Map;
-import org.springframework.ai.tool.annotation.Tool;
+import org.springaicommunity.mcp.annotation.McpTool;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
+/**
+ * Tool de Health Check usando anotaciones MCP
+ * <p>
+ * Con @McpTool, Spring AI automáticamente: - Genera el JSON schema - Registra el tool en el
+ * servidor MCP - Maneja la serialización/deserialización
+ */
 @Component
 public class HealthTool {
 
-    @Tool(name = "healthCheck", description = "Retorna 'OK' para health checks")
-    public String healthCheck() {
-        return "OK";
-    }
-
-    // Metodo para obtener la especificación de la herramienta
-    public McpStatelessServerFeatures.AsyncToolSpecification getToolSpecification() {
-        McpSchema.Tool healthCheckTool = McpSchema.Tool.builder()
-                .name("healthCheck")
-                .title("Health Check Tool")
-                .description("Retorna 'OK' para health checks")
-                .inputSchema(new McpSchema.JsonSchema(
-                        "object", // type
-                        Map.of(), // properties
-                        List.of(), // required
-                        false, // additionalProperties
-                        Map.of(), // $defs
-                        Map.of()  // definitions
-                ))
-                .build();
-
-        return new McpStatelessServerFeatures.AsyncToolSpecification(
-                healthCheckTool,
-                (exchange, input) -> {
-                    // Puedes agregar logs aquí si es necesario
-                    return Mono.just(
-                            new McpSchema.CallToolResult(healthCheck(), false)
-                    );
-                }
-        );
+    @McpTool(
+            name = "healthCheck",
+            description = "Verifica el estado del servidor MCP. Retorna 'OK' si todo funciona correctamente."
+    )
+    public reactor.core.publisher.Mono<String> healthCheck() {
+        return reactor.core.publisher.Mono.just("OK");
     }
 }
