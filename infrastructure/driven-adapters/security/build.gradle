@@ -4,6 +4,5 @@ dependencies {
     // Caching
     implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
     // Seguridad
-    implementation("org.springaicommunity:mcp-server-security:0.0.4")
     implementation("org.springframework.boot:spring-boot-starter-security")
 }

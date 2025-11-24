@@ -11,6 +11,6 @@ public interface ApiKeyR2dbcRepository extends R2dbcRepository<ApiKeyEntity, Str
 
     Flux<ApiKeyEntity> findByEnabledTrue();
 
-    Flux<ApiKeyEntity> findExpiringSoonAndEnabled(LocalDateTime expirationDate);
+    Flux<ApiKeyEntity> findByExpiresAtBeforeAndEnabledIsTrue(LocalDateTime date);
 
 }

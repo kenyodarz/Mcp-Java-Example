@@ -6,9 +6,9 @@ import reactor.core.publisher.Mono;
 
 /**
  * Gateway (Puerto de salida) para gestionar API Keys
- * <p>
- * Esta interfaz define las operaciones de persistencia para API Keys sin exponer detalles de
- * implementación (JPA, R2DBC, MongoDB, etc.)
+ *
+ * Esta interfaz define las operaciones de persistencia para API Keys
+ * sin exponer detalles de implementación (JPA, R2DBC, MongoDB, etc.)
  */
 public interface ApiKeyGateway {
 
@@ -52,11 +52,11 @@ public interface ApiKeyGateway {
     Flux<ApiKey> findAll();
 
     /**
-     * Lista solo las API Keys activas
+     * Lista solo las API Keys activas y no expiradas
      *
      * @return Flux con las API Keys activas
      */
-    Flux<ApiKey> findAllActive();
+    Flux<ApiKey> findAllEnabled();
 
     /**
      * Lista las API Keys que están por expirar
@@ -73,6 +73,4 @@ public interface ApiKeyGateway {
      * @return Mono<Void> cuando se complete la actualización
      */
     Mono<Void> updateLastUsed(String id);
-
-    Flux<ApiKey> findAllEnabled();
 }

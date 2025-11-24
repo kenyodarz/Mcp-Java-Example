@@ -1,89 +1,82 @@
-// infrastructure/driven-adapters/security/src/main/java/co/com/bancolombia/security/apikey/InMemoryCachedApiKeyRepository.java
-
 package co.com.bancolombia.security.apikey;
 
 import co.com.bancolombia.model.apikey.ApiKey;
 import co.com.bancolombia.model.apikey.gateways.ApiKeyGateway;
-import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import jakarta.annotation.PostConstruct;
 import java.time.Duration;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springaicommunity.mcp.security.server.apikey.ApiKeyEntity;
-import org.springaicommunity.mcp.security.server.apikey.ApiKeyEntityRepository;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InMemoryCachedApiKeyRepository implements ApiKeyEntityRepository<ApiKeyEntity> {
+public class InMemoryCachedApiKeyRepository {
 
     private final ApiKeyGateway apiKeyGateway;
-
-    private final Cache<String, ApiKeyEntity> cache = Caffeine.newBuilder()
+    private final LoadingCache<String, SimpleApiKeyEntity> cache = Caffeine.newBuilder()
             .maximumSize(1_000)
             .expireAfterWrite(Duration.ofHours(12))
             .refreshAfterWrite(Duration.ofMinutes(30))
             .recordStats()
-            .build();
+            .build(this::loadApiKey);
 
     @PostConstruct
     public void warmUpCache() {
         log.info("Iniciando warm-up del caché de API Keys...");
         apiKeyGateway.findAllEnabled()
-                .map(this::toMcpEntity)
-                .doOnNext(entity -> cache.put(entity.getId(), entity))
+                .map(this::toSimpleEntity)
+                .doOnNext(entity -> {
+                    if (entity != null) {
+                        cache.put(entity.id(), entity);
+                    }
+                })
                 .doOnComplete(() -> log.info("Caché de API Keys cargado con {} claves",
                         cache.asMap().size()))
-                .doOnError(e -> log.error("Error en warm-up del caché de API Keys", e))
                 .subscribe();
     }
 
-    @Override
-    public ApiKeyEntity findByKeyId(String keyId) {
-        return cache.get(keyId, id -> {
-            log.debug("Cache MISS para API Key: {}", id);
-            ApiKey domainKey = apiKeyGateway.findById(id)
-                    .block(Duration.ofMillis(500));
-            return toMcpEntity(domainKey);
-        });
+    public Mono<SimpleApiKeyEntity> findByKeyId(String keyId) {
+        return Mono.fromCallable(() -> cache.get(keyId))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
-    private ApiKeyEntity toMcpEntity(co.com.bancolombia.model.apikey.ApiKey domain) {
+    private SimpleApiKeyEntity loadApiKey(String keyId) {
+        log.debug("Loading API Key from DB (miss/refresh): {}", keyId);
+        ApiKey domainKey = apiKeyGateway.findById(keyId)
+                .block(Duration.ofSeconds(2));
+        return toSimpleEntity(domainKey);
+    }
+
+    private SimpleApiKeyEntity toSimpleEntity(ApiKey domain) {
         if (domain == null || !Boolean.TRUE.equals(domain.getEnabled())) {
             return null;
         }
+        return new SimpleApiKeyEntity(domain.getId(), domain.getSecretHash(), true);
+    }
 
-        return new ApiKeyEntity() {
-            @Override
-            public String getId() {
-                return domain.getId();
-            }
+    public CacheMetrics getCacheMetrics() {
+        var stats = cache.stats();
+        return new CacheMetrics(
+                cache.asMap().size(),
+                stats.hitRate(),
+                stats.hitCount(),
+                stats.missCount(),
+                stats.evictionCount(),
+                stats.loadSuccessCount()
+        );
+    }
 
-            @Override
-            public String getSecret() {
-                return domain.getSecretHash();
-            }
+    public record SimpleApiKeyEntity(String id, String secretHash, boolean enabled) {
 
-            public boolean isEnabled() {
-                return true;
-            }
+    }
 
-            @Override
-            public List<org.springframework.security.core.GrantedAuthority> getAuthorities() {
-                return List.of();
-            }
+    public record CacheMetrics(long size, double hitRate, long hitCount, long missCount,
+                               long evictionCount, long loadSuccessCount) {
 
-            @Override
-            public void eraseCredentials() {
-            }
-
-            @Override
-            public ApiKeyEntity copy() {
-                return this;
-            }
-        };
     }
 }

@@ -40,28 +40,14 @@ spring:
   h2:
     console:
       enabled: true
-      path: "/h2-console"
-      settings:
-        web-allow-others: false
-        trace: false
-
-  datasource:
-    url: jdbc:h2:mem:mcpdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  # R2DBC (Reactivo) para operaciones de BD
-  r2dbc:
-    url: r2dbc:h2:mem:///mcpdb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
-
+      path: "/h2"
   # Flyway para migraciones de BD
   flyway:
     enabled: true
-    baseline-on-migrate: true
     locations: classpath:db/migration
+    baseline-on-migrate: true
+    sql-migration-prefix: V
+    sql-migration-separator: __
 
   # ============================================
   # CONFIGURACIÓN DE SEGURIDAD
@@ -110,6 +96,14 @@ adapter:
     headers:
       Accept: "application/json"
       Content-Type: "application/json"
+adapters:
+  r2dbc:
+    host: localhost
+    port: 5432
+    database: mcpdb
+    username: postgres
+    password: postgres
+    schema: public
 
 # ============================================
 # ACTUATOR Y MÉTRICAS

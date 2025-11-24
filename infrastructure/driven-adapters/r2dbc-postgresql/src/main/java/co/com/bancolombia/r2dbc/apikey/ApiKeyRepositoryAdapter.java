@@ -11,8 +11,9 @@ import reactor.core.publisher.Mono;
 
 /**
  * Adaptador que implementa el gateway de API Keys usando R2DBC
- * <p>
- * Esta clase traduce entre el modelo de dominio (ApiKey) y el de persistencia (ApiKeyEntity)
+ *
+ * Esta clase traduce entre el modelo de dominio (ApiKey) y
+ * el modelo de persistencia (ApiKeyEntity)
  */
 @Slf4j
 @Repository
@@ -65,15 +66,19 @@ public class ApiKeyRepositoryAdapter implements ApiKeyGateway {
     }
 
     @Override
-    public Flux<ApiKey> findAllActive() {
+    public Flux<ApiKey> findAllEnabled() {
+        log.debug("🔍 Buscando todas las API Keys activas y no expiradas");
+
         return repository.findByEnabledTrue()
-                .map(this::toDomain);
+                .map(this::toDomain)
+                .filter(ApiKey::isValid) // Filtrar las que no han expirado
+                .doOnComplete(() -> log.debug("✅ Consulta de API Keys activas completada"));
     }
 
     @Override
     public Flux<ApiKey> findExpiringSoon(int daysBeforeExpiration) {
         LocalDateTime expirationDate = LocalDateTime.now().plusDays(daysBeforeExpiration);
-        return repository.findExpiringSoonAndEnabled(expirationDate)
+        return repository.findByExpiresAtBeforeAndEnabledIsTrue(expirationDate)
                 .map(this::toDomain);
     }
 
@@ -88,14 +93,6 @@ public class ApiKeyRepositoryAdapter implements ApiKeyGateway {
                     return repository.save(entity);
                 })
                 .then();
-    }
-
-    // En ApiKeyRepositoryAdapter.java
-
-    @Override
-    public Flux<ApiKey> findAllEnabled() {
-        return repository.findByEnabledTrue()
-                .map(this::toDomain);
     }
 
     // ========================================
