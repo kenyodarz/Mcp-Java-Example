@@ -1,120 +1,246 @@
-# Estructura de Módulos - Clean Architecture Bancolombia
+# Estructura de Módulos - Clean Architecture Bancolombia + Spring AI MCP
 
-## Ubicación de Archivos de Configuración
+## 📋 Tabla de Contenidos
 
-### 📁 applications/app-service/src/main/java/co/com/bancolombia/config/
-
-```
-applications/app-service/src/main/java/co/com/bancolombia/config/
-├── SpringAiMcpConfiguration.java      ← ✅ NUEVA CLASE AQUÍ
-├── UseCasesConfig.java                ← Ya existe
-└── WebFluxConfig.java                 ← Opcional para configuraciones adicionales
-```
-
-### 📋 Razón
-
-Según Clean Architecture de Bancolombia:
-
-- **applications/app-service**: Es la capa más externa
-- Responsable de ensamblar módulos y resolver dependencias
-- Contiene toda la configuración de Spring (@Configuration)
-- Aquí se configuran los beans de infraestructura
+1. [Visión General](#visión-general)
+2. [Estructura de Directorios](#estructura-de-directorios)
+3. [Responsabilidades por Capa](#responsabilidades-por-capa)
+4. [Flujo de Dependencias](#flujo-de-dependencias)
+5. [Ubicación de Archivos](#ubicación-de-archivos)
+6. [Convenciones](#convenciones)
 
 ---
 
-## 📁 infrastructure/entry-points/mcp-server/
+## 🎯 Visión General
 
-Este módulo contiene la **implementación** de los componentes MCP:
+Este proyecto combina:
+
+- **Clean Architecture** (Robert C. Martin)
+- **Scaffold de Bancolombia** (estructura modular con Gradle)
+- **Spring AI MCP 1.1.0** (Model Context Protocol)
+- **Programación Reactiva** (Project Reactor)
+
+### Principios Fundamentales
 
 ```
-infrastructure/entry-points/mcp-server/src/main/java/co/com/bancolombia/mcp/
-├── config/
-│   ├── McpToolsConfig.java            ← Configuración de Tools
-│   ├── McpResourcesConfig.java        ← Configuración de Resources
-│   └── McpPromptsConfig.java          ← Configuración de Prompts
-├── tools/
-│   ├── SaludoTool.java
-│   └── HealthTool.java
-├── resources/
-│   ├── SystemInfoResource.java
-│   └── UserInfoResource.java
-└── prompts/
-    ├── SaludoPrompt.java
-    └── BienvenidaPrompt.java
+🔵 Domain (Núcleo) → No depende de nadie
+    ↑
+🟢 Infrastructure → Depende del Domain
+    ↑
+🟡 Applications → Ensambla todo
 ```
 
 ---
 
-## 🎯 Responsabilidades por Capa
+## 📁 Estructura de Directorios
 
-### Domain (Núcleo)
+```
+mcp/
+├── domain/                                # 🔵 CAPA DE DOMINIO
+│   ├── model/                             # Entidades y puertos
+│   │   ├── src/main/java/.../model/
+│   │   │   └── userinfo/
+│   │   │       ├── UserInfo.java          # Entidad de dominio
+│   │   │       └── gateways/
+│   │   │           └── UserInfoGateway.java  # Puerto de salida
+│   │   └── build.gradle
+│   │
+│   └── usecase/                           # Casos de uso (lógica de negocio)
+│       ├── src/main/java/.../usecase/
+│       │   └── GetUserInfoUseCase.java    # Caso de uso
+│       └── build.gradle
+│
+├── infrastructure/                        # 🟢 CAPA DE INFRAESTRUCTURA
+│   │
+│   ├── driven-adapters/                   # Adaptadores de SALIDA
+│   │   └── rest-consumer/                 # Consumidor de APIs REST
+│   │       ├── src/main/java/.../consumer/
+│   │       │   ├── RestConsumer.java      # Cliente HTTP
+│   │       │   ├── adapters/
+│   │       │   │   └── SimpsonsApiAdapter.java  # Implementa UserInfoGateway
+│   │       │   └── config/
+│   │       │       └── RestConsumerConfig.java
+│   │       └── build.gradle
+│   │
+│   └── entry-points/                      # Adaptadores de ENTRADA
+│       └── mcp-server/                    # Servidor MCP (Spring AI)
+│           ├── src/main/java/.../mcp/
+│           │   ├── tools/                 # 🔧 TOOLS MCP
+│           │   │   ├── HealthTool.java    # @McpTool
+│           │   │   └── SaludoTool.java    # @McpTool
+│           │   │
+│           │   ├── resources/             # 📦 RESOURCES MCP
+│           │   │   ├── SystemInfoResource.java     # @McpResource
+│           │   │   └── UserInfoResource.java       # @McpResource (template)
+│           │   │
+│           │   └── prompts/               # 💬 PROMPTS MCP
+│           │       ├── SaludoPrompt.java      # @McpPrompt
+│           │       └── BienvenidaPrompt.java  # @McpPrompt
+│           │
+│           └── build.gradle
+│
+└── applications/                          # 🟡 CAPA DE APLICACIÓN
+    └── app-service/                       # Ensamblaje y configuración
+        ├── src/main/java/.../
+        │   ├── MainApplication.java       # Punto de entrada (main)
+        │   └── config/
+        │       └── UseCasesConfig.java    # Configuración de beans
+        │
+        ├── src/main/resources/
+        │   └── application.yaml           # Configuración de Spring
+        │
+        └── build.gradle
+```
 
+---
+
+## 🎭 Responsabilidades por Capa
+
+### 🔵 Domain (Núcleo del Negocio)
+
+**Ubicación**: `domain/`
+
+**Responsabilidades**:
+
+- Definir entidades de dominio (`UserInfo`)
+- Definir interfaces de puertos (`UserInfoGateway`)
+- Implementar lógica de negocio pura (`GetUserInfoUseCase`)
+- **NO depende de frameworks** (ni Spring, ni Reactor)
+
+**Módulos**:
 ```
 domain/
-├── model/          ← Entidades de dominio (UserInfo, etc.)
-└── usecase/        ← Lógica de negocio (GetUserInfoUseCase)
+├── model/       # Entidades y gateways (interfaces)
+└── usecase/     # Casos de uso (lógica de negocio)
 ```
 
-### Infrastructure (Detalles de Implementación)
+**Ejemplo**:
 
-```
-infrastructure/
-├── driven-adapters/        ← Adaptadores de salida (APIs externas, BD)
-│   └── rest-consumer/
-└── entry-points/           ← Adaptadores de entrada (REST, MCP)
-    └── mcp-server/
-```
+```java
+// domain/model/src/.../UserInfo.java
+@Data
+@Builder
+public class UserInfo {
 
-### Applications (Ensamblaje)
+    private Integer id;
+    private String name;
+    // ... más campos
+}
 
-```
-applications/
-└── app-service/
-    ├── config/             ← ✅ Todas las @Configuration
-    └── MainApplication.java
+// domain/model/src/.../gateways/UserInfoGateway.java
+public interface UserInfoGateway {
+
+    Mono<UserInfo> getUserInfoById(Integer id);
+}
+
+// domain/usecase/src/.../GetUserInfoUseCase.java
+public record GetUserInfoUseCase(UserInfoGateway gateway) {
+
+    public Mono<UserInfo> execute(Integer id) {
+        return gateway.getUserInfoById(id);
+    }
+}
 ```
 
 ---
 
-## 📝 Ejemplo Correcto: SpringAiMcpConfiguration.java
+### 🟢 Infrastructure (Detalles de Implementación)
 
-**Ubicación**:
-`applications/app-service/src/main/java/co/com/bancolombia/config/SpringAiMcpConfiguration.java`
+**Ubicación**: `infrastructure/`
+
+**Responsabilidades**:
+
+- **Driven Adapters** (salida): Implementar gateways definidos en el dominio
+- **Entry Points** (entrada): Exponer funcionalidad al mundo exterior
+- Depende del Domain, pero el Domain NO depende de Infrastructure
+
+#### 🔌 Driven Adapters (Adaptadores de Salida)
+
+**Ubicación**: `infrastructure/driven-adapters/`
+
+**Función**: Implementar los **puertos de salida** (gateways) definidos en el dominio.
+
+**Ejemplo**:
 
 ```java
-package co.com.bancolombia.config;
+// infrastructure/driven-adapters/rest-consumer/adapters/SimpsonsApiAdapter.java
+@Repository
+public class SimpsonsApiAdapter implements UserInfoGateway {
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+    private final RestConsumer client;
 
-@Slf4j
+    @Override
+    public Mono<UserInfo> getUserInfoById(Integer id) {
+        return client.getCharacterById(id)
+                .map(this::toUserInfo);
+    }
+}
+```
+
+#### 🌐 Entry Points (Adaptadores de Entrada)
+
+**Ubicación**: `infrastructure/entry-points/`
+
+**Función**: Exponer la funcionalidad del sistema al exterior (REST, MCP, GraphQL, etc.).
+
+**MCP Server Structure**:
+```
+entry-points/mcp-server/
+├── tools/       # @McpTool - Funciones ejecutables
+├── resources/   # @McpResource - Acceso a datos
+└── prompts/     # @McpPrompt - Plantillas de conversación
+```
+
+**Ejemplo de Tool**:
+
+```java
+// infrastructure/entry-points/mcp-server/tools/SaludoTool.java
+@Component
+public class SaludoTool {
+
+    @McpTool(name = "saludoTool", description = "...")
+    public Mono<String> saludo(
+            @McpToolParam(required = true) String name
+    ) {
+        return Mono.just("¡Hola " + name + "!");
+    }
+}
+```
+
+---
+
+### 🟡 Applications (Ensamblaje)
+
+**Ubicación**: `applications/app-service/`
+
+**Responsabilidades**:
+
+- Arrancar la aplicación (`MainApplication.java`)
+- Configurar beans de Spring (`@Configuration`)
+- Resolver dependencias
+- Configuración global (`application.yaml`)
+
+**Estructura**:
+
+```
+app-service/
+├── src/main/java/
+│   ├── MainApplication.java       # @SpringBootApplication
+│   └── config/
+│       └── UseCasesConfig.java    # @Configuration para casos de uso
+│
+└── src/main/resources/
+    └── application.yaml            # Configuración de Spring Boot
+```
+
+**Ejemplo**:
+```java
+// applications/app-service/src/.../config/UseCasesConfig.java
 @Configuration
-@ComponentScan(basePackages = {
-        "co.com.bancolombia.mcp.tools",
-        "co.com.bancolombia.mcp.resources",
-        "co.com.bancolombia.mcp.prompts",
-        "co.com.bancolombia.mcp.config"  // ← Escanea las configs de MCP
-})
-public class SpringAiMcpConfiguration {
-
+public class UseCasesConfig {
     @Bean
-    @Primary
-    public ObjectMapper objectMapper() {
-        log.info("Configurando ObjectMapper para Spring AI MCP");
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-
-        return mapper;
+    public GetUserInfoUseCase getUserInfoUseCase(UserInfoGateway gateway) {
+        return new GetUserInfoUseCase(gateway);
     }
 }
 ```
@@ -123,95 +249,177 @@ public class SpringAiMcpConfiguration {
 
 ## 🔄 Flujo de Dependencias
 
+### Flujo de Ejecución (Request → Response)
+
 ```
-MainApplication.java (app-service)
-    ↓ importa
-SpringAiMcpConfiguration.java (app-service/config)
-    ↓ escanea componentes
-McpToolsConfig.java (mcp-server/config)
-    ↓ inyecta
-SaludoTool.java (mcp-server/tools)
-    ↓ usa
-GetUserInfoUseCase.java (domain/usecase)
-    ↓ depende de
-UserInfoGateway.java (domain/model/gateways)
-    ↓ implementado por
-SimpsonsApiAdapter.java (rest-consumer/adapters)
+1️⃣ Cliente MCP (Claude, Cursor, etc.)
+    ↓ HTTP POST /mcp/stream
+    
+2️⃣ Entry Point: @McpTool / @McpResource / @McpPrompt
+    │ (infrastructure/entry-points/mcp-server/)
+    ↓ Llama al caso de uso
+    
+3️⃣ Use Case (domain/usecase/)
+    │ Lógica de negocio
+    ↓ Usa el gateway (puerto)
+    
+4️⃣ Gateway Implementation (infrastructure/driven-adapters/)
+    │ Llama a API externa, BD, etc.
+    ↓ Retorna datos
+    
+5️⃣ Use Case → Entry Point → Cliente
+```
+
+### Diagrama de Dependencias
+
+```
+┌─────────────────────────────────────────────────────┐
+│  applications/app-service                           │
+│  ┌───────────────────────────────────────────────┐  │
+│  │  MainApplication + Configurations             │  │
+│  └───────────────────────────────────────────────┘  │
+└────────────────────┬────────────────────────────────┘
+                     │ ensambla
+                     ↓
+┌─────────────────────────────────────────────────────┐
+│  infrastructure/                                    │
+│  ┌──────────────────┐      ┌──────────────────┐    │
+│  │  entry-points/   │      │ driven-adapters/ │    │
+│  │  mcp-server      │ ───→ │ rest-consumer    │    │
+│  └──────────────────┘      └──────────────────┘    │
+└────────────────────┬────────────────┬───────────────┘
+                     │                │
+                     └────────┬───────┘
+                              │ implementa
+                              ↓
+                   ┌─────────────────────┐
+                   │  domain/            │
+                   │  ┌────────────────┐ │
+                   │  │ model/         │ │
+                   │  │  - UserInfo    │ │
+                   │  │  - Gateways    │ │
+                   │  └────────────────┘ │
+                   │  ┌────────────────┐ │
+                   │  │ usecase/       │ │
+                   │  │  - UseCases    │ │
+                   │  └────────────────┘ │
+                   └─────────────────────┘
 ```
 
 ---
 
-## ⚠️ Errores Comunes a Evitar
+## 📦 Ubicación de Archivos por Tipo
 
-❌ **NO colocar @Configuration en infrastructure**
+| Tipo de Clase                    | Módulo                     | Paquete                                      | Anotación                     |
+|----------------------------------|----------------------------|----------------------------------------------|-------------------------------|
+| Entidad de Dominio               | `model`                    | `co.com.bancolombia.model.{entity}`          | `@Data`, `@Builder`           |
+| Gateway (Interface)              | `model`                    | `co.com.bancolombia.model.{entity}.gateways` | (interface)                   |
+| Use Case                         | `usecase`                  | `co.com.bancolombia.usecase`                 | `record` o clase              |
+| Adapter (Implementación Gateway) | `driven-adapter/{adapter}` | `co.com.bancolombia.{adapter}.adapters`      | `@Repository` o `@Component`  |
+| MCP Tool                         | `mcp-server`               | `co.com.bancolombia.mcp.tools`               | `@Component` + `@McpTool`     |
+| MCP Resource                     | `mcp-server`               | `co.com.bancolombia.mcp.resources`           | `@Component` + `@McpResource` |
+| MCP Prompt                       | `mcp-server`               | `co.com.bancolombia.mcp.prompts`             | `@Component` + `@McpPrompt`   |
+| Configuración                    | `app-service`              | `co.com.bancolombia.config`                  | `@Configuration`              |
+| Main Application                 | `app-service`              | `co.com.bancolombia`                         | `@SpringBootApplication`      |
 
-```
-infrastructure/entry-points/mcp-server/config/SpringAiMcpConfiguration.java  ← ❌ INCORRECTO
-```
+---
 
-✅ **SÍ colocar @Configuration en applications**
+## ⚙️ Convenciones
 
-```
-applications/app-service/src/main/java/co/com/bancolombia/config/SpringAiMcpConfiguration.java  ← ✅ CORRECTO
-```
+### ✅ DO (Hacer)
 
-❌ **NO colocar @Component en applications**
+- ✅ **Domain NO depende de nadie** (ni Spring, ni frameworks)
+- ✅ **Use Cases como records** cuando no tienen estado
+- ✅ **Interfaces (Gateways) en model/gateways/**
+- ✅ **Implementaciones en infrastructure/**
+- ✅ **@Configuration solo en applications/app-service**
+- ✅ **Métodos reactivos (`Mono<T>`)** para servidores ASYNC
+- ✅ **Logs estructurados** con SLF4J
+
+### ❌ DON'T (No hacer)
+
+- ❌ **NO poner @Configuration en infrastructure**
+- ❌ **NO poner lógica de negocio en entry-points**
+- ❌ **NO hacer que domain dependa de infrastructure**
+- ❌ **NO usar tipos síncronos** en servidores ASYNC MCP
+- ❌ **NO mezclar responsabilidades de capas**
+
+---
+
+## 🔍 Ejemplos Prácticos
+
+### Agregar un nuevo Tool
+
+1. **Crear la clase en** `infrastructure/entry-points/mcp-server/tools/`:
 
 ```java
-// En applications/app-service
-@Component  ← ❌
-Los componentes
-van en
-infrastructure
 
-public class SaludoTool {
+@Component
+public class MiNuevoTool {
 
+    @McpTool(
+            name = "miNuevoTool",
+            description = "Hace algo útil"
+    )
+    public Mono<String> ejecutar(
+            @McpToolParam(required = true) String parametro
+    ) {
+        return Mono.just("Resultado: " + parametro);
+    }
 }
 ```
 
-✅ **SÍ colocar @Component en infrastructure**
+2. **Spring AI lo detecta automáticamente** (no necesitas configuración adicional)
 
+### Agregar un nuevo Use Case
+
+1. **Crear el caso de uso en** `domain/usecase/`:
 ```java
-// En infrastructure/entry-points/mcp-server
-@Component  ← ✅CORRECTO
+public record MiNuevoUseCase(MiGateway gateway) {
 
-public class SaludoTool {
+    public Mono<MiEntidad> execute(Integer id) {
+        return gateway.obtener(id);
+    }
+}
+```
 
+2. **Crear el bean en** `applications/app-service/config/UseCasesConfig.java`:
+```java
+
+@Bean
+public MiNuevoUseCase miNuevoUseCase(MiGateway gateway) {
+    return new MiNuevoUseCase(gateway);
 }
 ```
 
 ---
 
-## 📦 Resumen de Ubicaciones
-
-| Tipo de Clase            | Módulo          | Paquete                                |
-|--------------------------|-----------------|----------------------------------------|
-| `@Configuration`         | `app-service`   | `co.com.bancolombia.config`            |
-| `@Component` (Tools)     | `mcp-server`    | `co.com.bancolombia.mcp.tools`         |
-| `@Component` (Resources) | `mcp-server`    | `co.com.bancolombia.mcp.resources`     |
-| `@Component` (Prompts)   | `mcp-server`    | `co.com.bancolombia.mcp.prompts`       |
-| Use Cases                | `usecase`       | `co.com.bancolombia.usecase`           |
-| Entities/Models          | `model`         | `co.com.bancolombia.model`             |
-| Adapters                 | `rest-consumer` | `co.com.bancolombia.consumer.adapters` |
-
----
-
-## 🚀 Comandos para Crear la Estructura
+## 🚀 Comandos Útiles
 
 ```bash
-# Desde la raíz del proyecto
+# Compilar el proyecto
+./gradlew clean build
 
-# Crear SpringAiMcpConfiguration en app-service
-touch applications/app-service/src/main/java/co/com/bancolombia/config/SpringAiMcpConfiguration.java
+# Ejecutar tests
+./gradlew test
 
-# Verificar que las configuraciones de MCP existan
-ls -la infrastructure/entry-points/mcp-server/src/main/java/co/com/bancolombia/mcp/config/
+# Ejecutar la aplicación
+./gradlew bootRun
+
+# Ver dependencias
+./gradlew dependencies
+
+# Generar reporte de cobertura
+./gradlew jacocoTestReport
 ```
 
 ---
 
-## 📖 Referencias
+## 📚 Referencias
 
+- [Clean Architecture - Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Clean Architecture - Bancolombia](https://medium.com/bancolombia-tech/clean-architecture-aislando-los-detalles-4f9530f35d7a)
-- [Scaffold Generator](https://github.com/bancolombia/scaffold-clean-architecture)
-- [Documentación interna del proyecto](README.md)
+- [Scaffold Generator - Bancolombia](https://github.com/bancolombia/scaffold-clean-architecture)
+- [Spring AI Documentation](https://docs.spring.io/spring-ai/reference/)
+- [Spring AI MCP](https://docs.spring.io/spring-ai/reference/api/mcp/)
+- [Project Reactor](https://projectreactor.io/docs)
