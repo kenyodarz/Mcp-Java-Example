@@ -1,10 +1,13 @@
 server:
   port: 8080
+
 spring:
   application:
-    name: "mcp"
+    name: "mcp-bancolombia"
+
   devtools:
     add-properties: false
+
   ai:
     mcp:
       server:
@@ -12,58 +15,162 @@ spring:
         name: "mcp-bancolombia"
         version: "1.0.0"
         type: "ASYNC"
-        instructions: "MCP reactivo con tools, resources y prompts"
+        instructions: |
+          Servidor MCP reactivo de Bancolombia con capacidades de:
+          - Tools: Herramientas ejecutables
+          - Resources: Acceso a datos del sistema y usuarios
+          - Prompts: Plantillas de conversación personalizadas
+          
+          Seguridad: Requiere autenticación via API Key (Header: X-API-Key)
+
         streamable-http:
           mcp-endpoint: "/mcp/stream"
+
         capabilities:
           tool: true
           resource: true
           prompt: true
           completion: false
-        request-timeout: "20s"
-        annotation-scanner:
-          enabled: true
+
+        request-timeout: "30s"
+
+  # ============================================
+  # CONFIGURACIÓN DE BASE DE DATOS H2
+  # ============================================
   h2:
     console:
       enabled: true
-      path: "/h2"
-  profiles:
-    include: null
+      path: "/h2-console"
+      settings:
+        web-allow-others: false
+        trace: false
+
+  datasource:
+    url: jdbc:h2:mem:mcpdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # R2DBC (Reactivo) para operaciones de BD
+  r2dbc:
+    url: r2dbc:h2:mem:///mcpdb?options=DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+
+  # Flyway para migraciones de BD
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  # ============================================
+  # CONFIGURACIÓN DE SEGURIDAD
+  # ============================================
+  security:
+    # Nota: La configuración OAuth2 se agrega cuando se implemente
+    user:
+      name: admin  # Usuario para H2 console
+      password: admin
+
+# ============================================
+# CONFIGURACIÓN DE ROTACIÓN DE API KEYS
+# ============================================
+security:
+  apikey:
+    rotation:
+      enabled: true
+      cron: "0 0 2 * * *"  # Cada día a las 2:00 AM
+    notification:
+      cron: "0 0 9 * * MON"  # Cada lunes a las 9:00 AM
+      days-before-expiration: 30
+
+# ============================================
+# LOGGING
+# ============================================
 logging:
   level:
-    io.modelcontextprotocol: "DEBUG"
-    org.springframework.ai.mcp: "DEBUG"
+    root: INFO
+    io.modelcontextprotocol: DEBUG
+    org.springframework.ai.mcp: DEBUG
+    co.com.bancolombia: DEBUG
+    org.springframework.security: INFO
+    org.springframework.r2dbc: DEBUG
+    # Auditoría
+    co.com.bancolombia.mcp.audit: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# ============================================
+# CONFIGURACIÓN DE REST CONSUMER
+# ============================================
 adapter:
   restconsumer:
     timeout: 5000
     url: "https://thesimpsonsapi.com/api"
     headers:
-      Authorization: "Bearer token123"
-      X-App-Name: "MiAplicacion"
       Accept: "application/json"
       Content-Type: "application/json"
+
+# ============================================
+# ACTUATOR Y MÉTRICAS
+# ============================================
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
   health:
     circuitbreakers:
       enabled: true
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# ============================================
+# RESILIENCE4J
+# ============================================
 resilience4j:
   circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: 10s
+        automaticTransitionFromOpenToHalfOpenEnabled: true
     instances:
-      testGet:
-        registerHealthIndicator: true
-        failureRateThreshold: 50
-        slowCallRateThreshold: 50
-        slowCallDurationThreshold: "2s"
-        permittedNumberOfCallsInHalfOpenState: 3
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 10
-        waitDurationInOpenState: "10s"
-      testPost:
-        registerHealthIndicator: true
-        failureRateThreshold: 50
-        slowCallRateThreshold: 50
-        slowCallDurationThreshold: "2s"
-        permittedNumberOfCallsInHalfOpenState: 3
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 10
-        waitDurationInOpenState: "10s"
+      simpsonsApi:
+        baseConfig: default
+
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+    instances:
+      simpsonsApi:
+        baseConfig: default
+
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+    instances:
+      simpsonsApi:
+        baseConfig: default

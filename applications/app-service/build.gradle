@@ -1,13 +1,22 @@
 apply plugin: 'org.springframework.boot'
 
 dependencies {
+    implementation project(':security')
+    implementation project(':r2dbc-postgresql')
     implementation project(':rest-consumer')
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation project(':mcp-server')
     implementation project(':model')
     implementation project(':usecase')
-    implementation "org.springframework.ai:spring-ai-starter-mcp-server-webflux:${springAiVersion}"
+
+    implementation 'org.reactivecommons.utils:object-mapper:0.1.0'
+
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation "org.springframework.ai:spring-ai-starter-mcp-server-webflux:${springAiVersion}"
+
+    implementation("org.springaicommunity:mcp-server-security:0.0.4")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+
     runtimeOnly('org.springframework.boot:spring-boot-devtools')
     testImplementation 'com.tngtech.archunit:archunit:1.4.1'
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
