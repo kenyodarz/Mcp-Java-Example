@@ -35,7 +35,6 @@ public class McpSecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                // ESTA ES LA ÚNICA FORMA QUE FUNCIONA CON TU VERSIÓN
                 .with(McpApiKeyConfigurer.mcpServerApiKey(), customizer -> customizer
                         .apiKeyRepository(cachedRepository)
                         .headerName("X-API-Key")
