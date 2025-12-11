@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
  * Este aspecto intercepta todas las llamadas a métodos anotados con
  *
  * @McpTool, @McpResource y @McpPrompt para registrar: - Quién (API Key ID) - Qué
- * (método/tool/resource) - Cuándo (timestamp) - Resultado (éxito/fallo) - Tiempo de ejecución
+ * (metodo/tool/resource) - Cuándo (timestamp) - Resultado (éxito/fallo) - Tiempo de ejecución
  */
 @Slf4j
 @Aspect
@@ -56,7 +56,7 @@ public class ApiKeyAuditAspect {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String apiKeyId = auth != null ? auth.getName() : "anonymous";
 
-        // Información del método
+        // Información del metodo
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
@@ -69,7 +69,7 @@ public class ApiKeyAuditAspect {
                 formatArgs(args));
 
         try {
-            // Ejecutar el método
+            // Ejecutar el metodo
             Object result = joinPoint.proceed();
 
             // Si es reactivo (Mono), agregar auditoría al flujo

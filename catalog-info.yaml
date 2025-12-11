@@ -1,0 +1,169 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: code-review-mcp-server
+  title: Code Review MCP Server
+  description: |
+    Servidor MCP (Model Context Protocol) que permite analizar repositorios completos de código y generar 
+    reportes estructurados con hallazgos, sugerencias de mejora y recomendaciones de arquitectura. 
+    Soporta proyectos Java con Clean Architecture e integración con Azure DevOps. 
+    Utiliza AWS Step Functions para procesamiento asíncrono y Claude 3.5 Sonnet para análisis con IA.
+
+  tags:
+    - mcp
+    - ai
+    - code-review
+    - llm
+    - clean-architecture
+    - azure-devops
+    - python
+    - aws
+    - static-analysis
+    - bedrock
+    - genai
+    - devops
+  
+  # Anotaciones para detección y configuración
+  annotations:
+    # URL del servidor MCP en PRODUCCIÓN (requerida por MCP Catalog Plugin)
+    server-url: 'https://inteligenciaartificial-int.apps.bancolombia.com/vsti-mcp/codereview/mcp'
+    
+    # URLs adicionales por ambiente (opcional, pero útil para troubleshooting)
+    server-url-dev: 'https://inteligenciaartificial-int-dev.apps.ambientesbc.com/vsti-mcp/codereview/mcp'
+    server-url-qa: 'https://inteligenciaartificial-int-qa.apps.ambientesbc.com/vsti-mcp/codereview/mcp'
+    
+    # Proyecto de Azure DevOps
+    dev.azure.com/project: 'b267af7c-3233-4ad1-97b3-91083943100d'
+    dev.azure.com/project-repo: 'NU1041002_TI_MCPSERVERS_HB_MR'
+    
+    # Pipeline de build
+    dev.azure.com/build-definition: '55727'
+    
+    # Ubicación del código fuente en el repositorio
+    backstage.io/source-location: 'url:https://dev.azure.com/grupobancolombia/b267af7c-3233-4ad1-97b3-91083943100d/_git/NU1041002_TI_MCPSERVERS_HB_MR?path=/code_review_smcp'
+    
+    # Tipo de servidor MCP y protocolo
+    mcp.io/protocol-version: '2025-06-18'
+    mcp.io/server-type: 'stateless-http'
+    
+    # Información de arquitectura
+    architecture.bancolombia.com/pattern: 'clean-architecture'
+    architecture.bancolombia.com/language: 'python'
+    architecture.bancolombia.com/framework: 'fastmcp'
+
+  # Links
+  links:
+    - url: 'https://dev.azure.com/grupobancolombia/b267af7c-3233-4ad1-97b3-91083943100d/_git/NU1041002_TI_MCPSERVERS_HB_MR?path=/code_review_smcp'
+      title: 'Código Fuente'
+      icon: 'code'
+
+    - url: 'https://dev.azure.com/grupobancolombia/b267af7c-3233-4ad1-97b3-91083943100d/_build?definitionId=55727'
+      title: 'Azure Pipeline'
+      icon: 'build'
+
+    - url: 'https://inteligenciaartificial-int.apps.bancolombia.com/vsti-mcp/codereview/mcp'
+      title: 'Endpoint MCP (Producción)'
+      icon: 'cloud'
+
+    - url: 'https://inteligenciaartificial-int-qa.apps.ambientesbc.com/vsti-mcp/codereview/mcp'
+      title: 'Endpoint MCP (QA)'
+      icon: 'cloud'
+
+    - url: 'https://modelcontextprotocol.io/docs'
+      title: 'Documentación MCP Protocol'
+      icon: 'docs'
+
+spec:
+  type: mcp
+  lifecycle: production
+  owner: group:default/practicas-ingenieria-software
+  system: inteligencia-artificial
+  # Subpath dentro del monorepo
+  subcomponentOf: component:default/mcp-servers-monorepo
+  
+  # Dependencias de otros componentes/recursos
+  dependsOn:
+    - resource:default/aws-step-functions
+    - resource:default/aws-s3
+    - resource:default/aws-bedrock
+    - resource:default/azure-devops-api
+  
+  # APIs que proporciona (MCP Tools)
+  providesApis:
+    - code-review-mcp-api
+
+---
+# Definición del API MCP proporcionada
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: code-review-mcp-api
+  title: Code Review MCP API
+  description: API del protocolo MCP que expone herramientas para análisis de código
+  tags:
+    - mcp
+    - code-review
+    - api
+  
+  annotations:
+    server-url: 'https://inteligenciaartificial-int.apps.bancolombia.com/vsti-mcp/codereview/mcp'
+
+spec:
+  type: mcp
+  lifecycle: production
+  owner: group:default/practicas-ingenieria-software
+  system: inteligencia-artificial
+  
+  # Definición de tools disponibles
+  definition: |
+    # Code Review MCP Tools
+    
+    ## Available Tools
+    
+    ### 1. analyze_repository
+    **Descripción**: Inicia el análisis estático de un repositorio de código desde Azure DevOps.
+    
+    **Parámetros**:
+    - `repository_name` (string, requerido): Nombre del repositorio a analizar
+    - `path` (string, opcional): Ruta relativa dentro del repositorio (requerido para monorepos)
+    - `branch` (string, opcional): Rama a analizar (por defecto: trunk/main/master)
+    
+    **Retorna**:
+    - `execution_id` (string): ARN del Step Functions State Machine para tracking
+    
+    ---
+    
+    ### 2. check_status
+    **Descripción**: Consulta el estado actual de un análisis en ejecución.
+    
+    **Parámetros**:
+    - `execution_id` (string, requerido): ID de ejecución del análisis
+    
+    **Retorna**:
+    - `status` (string): Estado actual (RUNNING | SUCCEEDED | FAILED)
+    
+    ---
+    
+    ### 3. get_results
+    **Descripción**: Obtiene los resultados y reporte de un análisis completado.
+    
+    **Parámetros**:
+    - `execution_id` (string, requerido): ID de ejecución del análisis
+    
+    **Retorna**:
+    - `content` (string): Contenido del análisis
+    - `file` (string): Referencia al archivo en S3
+    
+    ---
+    
+    ## Protocolo
+    - **Versión**: MCP 2025-06-18
+    - **Formato**: JSON-RPC 2.0
+    - **Transport**: SSE (Server-Sent Events) sobre HTTP
+    - **Content-Type**: application/json
+    - **Accept**: text/event-stream, application/json
+    
+    ## Limitaciones
+    - Soporta únicamente Java y Clean Architecture actualmente
+    - Análisis puede tardar hasta 24 horas según tamaño del repositorio
+    - Requiere integración con Azure DevOps
