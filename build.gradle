@@ -1,11 +1,11 @@
 buildscript {
     ext {
-        cleanArchitectureVersion = '3.26.4'
+        cleanArchitectureVersion = '4.0.5'
         springBootVersion = '3.5.4'
-        springAiVersion = '1.1.0' // Cambiado de RC1 a release
+        springAiVersion = '1.1.2' // Cambiado de RC1 a release
         sonarVersion = '6.2.0.5505'
         jacocoVersion = '0.8.13'
-        pitestVersion = '1.19.0-rc.1'
+        pitestVersion = '1.19.0-rc.2'
         lombokVersion = '1.18.38'
     }
 }

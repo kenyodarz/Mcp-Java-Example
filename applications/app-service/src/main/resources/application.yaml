@@ -33,7 +33,6 @@ spring:
           completion: false
 
         request-timeout: "30s"
-
   # ============================================
   # CONFIGURACIÓN DE BASE DE DATOS H2
   # ============================================
@@ -54,21 +53,18 @@ spring:
   # ============================================
   security:
     # Nota: La configuración OAuth2 se agrega cuando se implemente
-    user:
-      name: admin  # Usuario para H2 console
-      password: admin
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://login.microsoftonline.com/428f4e2e-13bf-4884-b364-02ef9af41a1d/v2.0"
+          client-id: "60a5e8d0-c8cd-4c5d-a94c-b4312f58f55f"
 
 # ============================================
-# CONFIGURACIÓN DE ROTACIÓN DE API KEYS
+# CONFIGURACIÓN DE ROLES DE JWT
 # ============================================
-security:
-  apikey:
-    rotation:
-      enabled: true
-      cron: "0 0 2 * * *"  # Cada día a las 2:00 AM
-    notification:
-      cron: "0 0 9 * * MON"  # Cada lunes a las 9:00 AM
-      days-before-expiration: 30
+jwt:
+  json-exp-roles: "/roles"
+
 
 # ============================================
 # LOGGING
@@ -83,8 +79,8 @@ logging:
     org.springframework.r2dbc: DEBUG
     # Auditoría
     co.com.bancolombia.mcp.audit: INFO
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+#  pattern:
+#    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
 
 # ============================================
 # CONFIGURACIÓN DE REST CONSUMER

@@ -1,91 +1,154 @@
 package co.com.bancolombia.config;
 
-import co.com.bancolombia.security.apikey.InMemoryCachedApiKeyRepository;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.config.web.server.ServerHttpSecurity.CsrfSpec;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import reactor.core.publisher.Mono;
 
 @Slf4j
 @Configuration
 @EnableWebFluxSecurity
-@RequiredArgsConstructor
 public class McpSecurityConfig {
 
-    private final InMemoryCachedApiKeyRepository cachedRepository;
+    private static final String ROLE_PREFIX = "ROLE_";
+    private final String issuerUri;
+    private final String clientId;
+    private final String jsonExpRoles;
+    private final ObjectMapper mapper;
+
+    public McpSecurityConfig(
+            @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}") String issuerUri,
+            @Value("${spring.security.oauth2.resourceserver.jwt.client-id}") String clientId,
+            @Value("${jwt.json-exp-roles}") String jsonExpRoles,
+            ObjectMapper mapper) {
+        this.issuerUri = issuerUri;
+        this.clientId = clientId;
+        this.jsonExpRoles = jsonExpRoles;
+        this.mapper = mapper;
+    }
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        log.info("Configurando MCP Security 100% reactivo con caché de API Keys");
-
-        // Creamos un filtro de autenticación personalizado
-        AuthenticationWebFilter apiKeyFilter = new AuthenticationWebFilter(authenticationManager());
-        apiKeyFilter.setServerAuthenticationConverter(apiKeyAuthenticationConverter());
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
+            ReactiveJwtDecoder jwtDecoder) {
+        log.info("Configurando MCP Security con OAuth2 Resource Server y CORS");
 
         return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .csrf(CsrfSpec::disable)
+                // Usar configuración de CORS definida en CorsConfig.java (CorsWebFilter)
+                // .cors(CorsSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
+                        // Endpoints públicos para actuator
                         .pathMatchers("/actuator/health", "/actuator/info").permitAll()
                         .pathMatchers("/h2-console/**").permitAll()
-                        .anyExchange().authenticated()
-                )
-                .addFilterAt(apiKeyFilter,
-                        org.springframework.security.config.web.server.SecurityWebFiltersOrder.AUTHENTICATION)
+                        // Resto requiere autenticación
+                        .anyExchange().authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .jwtDecoder(jwtDecoder)
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .build();
     }
 
-    // Este es el AuthenticationManager reactivo que valida la clave
-    private ReactiveAuthenticationManager authenticationManager() {
-        return authentication -> {
-            String apiKey = (String) authentication.getCredentials();
-            return cachedRepository.findByKeyId(apiKey)
-                    .flatMap(entity -> {
-                        if (entity != null && entity.enabled()) {
-                            Authentication auth = new UsernamePasswordAuthenticationToken(
-                                    entity.id(), null, java.util.Collections.emptyList());
-                            return Mono.just(auth);
-                        }
-                        return Mono.empty(); // clave inválida
-                    })
-                    .switchIfEmpty(Mono.defer(Mono::empty));
-        };
-    }
+    @Bean
+    public ReactiveJwtDecoder jwtDecoder() {
+        log.info("Configurando JWT Decoder con issuer: {}", issuerUri);
 
-    // Convierte header → Authentication (sin validar aún)
-    private org.springframework.security.web.server.authentication.ServerAuthenticationConverter apiKeyAuthenticationConverter() {
-        return exchange -> {
-            String header = exchange.getRequest().getHeaders().getFirst("X-API-Key");
-            if (header == null || header.isBlank()) {
-                header = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-                if (header != null && header.startsWith("Bearer ")) {
-                    header = header.substring(7);
+        // Crear el decoder usando el issuer URI
+        var jwtDecoder = NimbusReactiveJwtDecoder.withIssuerLocation(issuerUri).build();
+
+        // 1. Usar validadores por defecto de Spring (timestamp, etc.) pero SIN issuer
+        // estricto
+        var defaultValidator = JwtValidators.createDefault();
+
+        // 2. Custom Validator para Audience y AppID (flexible para Graph/Azure AD)
+        OAuth2TokenValidator<Jwt> customValidator = jwt -> {
+            if (clientId == null || clientId.isBlank()) {
+                return OAuth2TokenValidatorResult.success();
+            }
+
+            // Validar Audience ('aud')
+            List<String> audience = jwt.getAudience();
+            if (audience != null) {
+                for (String aud : audience) {
+                    if (aud.contains(clientId)) {
+                        log.debug("Token aceptado por 'aud': {}", aud);
+                        return OAuth2TokenValidatorResult.success();
+                    }
                 }
             }
 
-            if (header == null || header.isBlank()) {
-                return Mono.empty();
+            // Validar App ID ('appid') - Fallback
+            String appid = jwt.getClaimAsString("appid");
+            if (clientId.equals(appid)) {
+                log.debug("Token aceptado por 'appid': {}", clientId);
+                return OAuth2TokenValidatorResult.success();
             }
 
-            Authentication auth = new UsernamePasswordAuthenticationToken(header, header);
-            return Mono.just(auth);
+            log.warn(
+                    "Token rechazado por mismatch. Esperado ClientID: {}. Recibido aud: {}, appid: {}",
+                    clientId,
+                    audience, appid);
+            return OAuth2TokenValidatorResult.failure(new OAuth2Error("invalid_token",
+                    "El token no está destinado a esta aplicación (aud/appid mismatch)", null));
         };
+
+        // 3. Combinar validadores
+        var combinedValidator = new DelegatingOAuth2TokenValidator<>(defaultValidator,
+                customValidator);
+        jwtDecoder.setJwtValidator(combinedValidator);
+
+        return jwtDecoder;
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
+    public Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter() {
+        var jwtConverter = new JwtAuthenticationConverter();
+        jwtConverter.setJwtGrantedAuthoritiesConverter(jwt -> extractRoles(jwt.getClaims()));
+
+        return new ReactiveJwtAuthenticationConverterAdapter(jwtConverter);
+    }
+
+    private Collection<GrantedAuthority> extractRoles(Map<String, Object> claims) {
+        try {
+            var json = mapper.writeValueAsString(claims);
+            var chunk = mapper.readTree(json).at(jsonExpRoles);
+            List<String> roles = mapper.readerFor(new TypeReference<List<String>>() {
+            }).readValue(chunk);
+
+            return roles.stream()
+                    .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            log.error("Error extrayendo roles del token JWT: {}", e.getMessage());
+            return List.of();
+        }
     }
 }
