@@ -1,11 +1,15 @@
 package co.com.bancolombia.mcp.audit;
 
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -14,7 +18,7 @@ import reactor.core.publisher.Mono;
  * <p>
  * Este aspecto intercepta todas las llamadas a métodos anotados con
  *
- * @McpTool, @McpResource y @McpPrompt para registrar: - Quién (API Key ID) - Qué
+ * @McpTool, @McpResource y @McpPrompt para registrar: - Quién (Client ID / User) - Qué
  * (metodo/tool/resource) - Cuándo (timestamp) - Resultado (éxito/fallo) - Tiempo de ejecución
  */
 @Slf4j
@@ -52,75 +56,91 @@ public class ApiKeyAuditAspect {
     private Object auditMcpCall(ProceedingJoinPoint joinPoint, String mcpType) throws Throwable {
         long startTime = System.currentTimeMillis();
 
-        // Obtener información de autenticación
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String apiKeyId = auth != null ? auth.getName() : "anonymous";
-
         // Información del metodo
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
         Object[] args = joinPoint.getArgs();
+        String argsString = formatArgs(args);
 
-        log.info("📊 [AUDIT] {} llamado por API Key: {} | Método: {}.{} | Args: {}",
-                mcpType,
-                apiKeyId,
-                className,
-                methodName,
-                formatArgs(args));
+        // Ejecutar el metodo
+        Object result = joinPoint.proceed();
 
-        try {
-            // Ejecutar el metodo
-            Object result = joinPoint.proceed();
+        // Si es reactivo (Mono), inyectar lógica de auditoría en el flujo
+        if (result instanceof Mono) {
+            return ReactiveSecurityContextHolder.getContext()
+                    .map(SecurityContext::getAuthentication)
+                    .map(this::extractClientId)
+                    .defaultIfEmpty("anonymous")
+                    .flatMap(clientId -> {
+                        log.info("📊 [AUDIT] {} llamado por: {} | Método: {}.{} | Args: {}",
+                                mcpType,
+                                clientId,
+                                className,
+                                methodName,
+                                argsString);
 
-            // Si es reactivo (Mono), agregar auditoría al flujo
-            if (result instanceof Mono) {
-                return ((Mono<?>) result)
-                        .doOnSuccess(value -> {
-                            long executionTime = System.currentTimeMillis() - startTime;
-                            log.info(
-                                    "✅ [AUDIT] {} exitoso | API Key: {} | Método: {}.{} | Tiempo: {}ms",
-                                    mcpType,
-                                    apiKeyId,
-                                    className,
-                                    methodName,
-                                    executionTime);
-                        })
-                        .doOnError(error -> {
-                            long executionTime = System.currentTimeMillis() - startTime;
-                            log.error(
-                                    "❌ [AUDIT] {} fallido | API Key: {} | Método: {}.{} | Tiempo: {}ms | Error: {}",
-                                    mcpType,
-                                    apiKeyId,
-                                    className,
-                                    methodName,
-                                    executionTime,
-                                    error.getMessage());
-                        });
+                        return ((Mono<?>) result)
+                                .doOnSuccess(value -> {
+                                    long executionTime = System.currentTimeMillis() - startTime;
+                                    log.info(
+                                            "✅ [AUDIT] {} exitoso | Client: {} | Método: {}.{} | Tiempo: {}ms",
+                                            mcpType,
+                                            clientId,
+                                            className,
+                                            methodName,
+                                            executionTime);
+                                })
+                                .doOnError(error -> {
+                                    long executionTime = System.currentTimeMillis() - startTime;
+                                    log.error(
+                                            "❌ [AUDIT] {} fallido | Client: {} | Método: {}.{} | Tiempo: {}ms | Error: {}",
+                                            mcpType,
+                                            clientId,
+                                            className,
+                                            methodName,
+                                            executionTime,
+                                            error.getMessage());
+                                });
+                    });
+        }
+
+        // Para métodos síncronos (fallback básico, aunque SecurityContextHolder
+        // probablemente esté vacío)
+        // En una app Full Reactive esto raramente ocurrirá para endpoints WebFlux
+        log.warn("⚠️ [AUDIT] Interceptado método no reactivo en aplicación WebFlux: {}.{}",
+                className, methodName);
+        return result;
+    }
+
+    private String extractClientId(Authentication auth) {
+        if (auth == null) {
+            return "anonymous";
+        }
+
+        if (auth instanceof JwtAuthenticationToken jwtauthenticationtoken) {
+            Jwt jwt = jwtauthenticationtoken.getToken();
+
+            // 1. Intentar 'appid' (Azure AD v1/Graph)
+            String appid = jwt.getClaimAsString("appid");
+            if (appid != null) {
+                return appid;
             }
 
-            // Para métodos síncronos
-            long executionTime = System.currentTimeMillis() - startTime;
-            log.info("✅ [AUDIT] {} exitoso | API Key: {} | Método: {}.{} | Tiempo: {}ms",
-                    mcpType,
-                    apiKeyId,
-                    className,
-                    methodName,
-                    executionTime);
+            // 2. Intentar 'azp' (Authorized Party - OIDC standard)
+            String azp = jwt.getClaimAsString("azp");
+            if (azp != null) {
+                return azp;
+            }
 
-            return result;
-
-        } catch (Throwable error) {
-            long executionTime = System.currentTimeMillis() - startTime;
-            log.error(
-                    "❌ [AUDIT] {} fallido | API Key: {} | Método: {}.{} | Tiempo: {}ms | Error: {}",
-                    mcpType,
-                    apiKeyId,
-                    className,
-                    methodName,
-                    executionTime,
-                    error.getMessage());
-            throw error;
+            // 3. Intentar extraer ClientID del 'aud'
+            List<String> aud = jwt.getAudience();
+            if (aud != null && !aud.isEmpty()) {
+                // Heurística simple: devolver el primer audience
+                return aud.getFirst();
+            }
         }
+
+        return auth.getName();
     }
 
     /**

@@ -26,6 +26,7 @@ dependencies {
     // Seguridad
     implementation 'org.springaicommunity:mcp-server-security:0.0.4'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
     implementation "org.springframework.boot:spring-boot-starter-actuator"
 
