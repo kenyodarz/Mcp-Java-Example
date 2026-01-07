@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
@@ -18,12 +20,15 @@ import reactor.core.publisher.Mono;
  * <p>
  * Este aspecto intercepta todas las llamadas a métodos anotados con
  *
- * @McpTool, @McpResource y @McpPrompt para registrar: - Quién (Client ID / User) - Qué
- * (metodo/tool/resource) - Cuándo (timestamp) - Resultado (éxito/fallo) - Tiempo de ejecución
+ * @McpTool, @McpResource y @McpPrompt para registrar: - Quién (Client ID /
+ * User) - Qué
+ * (metodo/tool/resource) - Cuándo (timestamp) - Resultado (éxito/fallo) -
+ * Tiempo de ejecución
  */
 @Slf4j
 @Aspect
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class ApiKeyAuditAspect {
 
     /**

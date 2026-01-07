@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity.CsrfSpec;
@@ -34,6 +35,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Configuration
 @EnableWebFluxSecurity
+@EnableReactiveMethodSecurity
 public class McpSecurityConfig {
 
     private static final String ROLE_PREFIX = "ROLE_";
@@ -60,6 +62,18 @@ public class McpSecurityConfig {
 
         return http
                 .csrf(CsrfSpec::disable)
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .accessDeniedHandler((exchange, ex) -> exchange.getPrincipal()
+                                .map(java.security.Principal::getName)
+                                .defaultIfEmpty("anonymous")
+                                .flatMap(user -> {
+                                    log.error("⛔ Acceso Denegado: {} | Usuario: {} | Path: {}",
+                                            ex.getMessage(), user, exchange.getRequest().getPath());
+                                    exchange.getResponse()
+                                            .setStatusCode(
+                                                    org.springframework.http.HttpStatus.FORBIDDEN);
+                                    return exchange.getResponse().setComplete();
+                                })))
                 // Usar configuración de CORS definida en CorsConfig.java (CorsWebFilter)
                 // .cors(CorsSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)

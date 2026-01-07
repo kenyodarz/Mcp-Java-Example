@@ -10,16 +10,19 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springaicommunity.mcp.annotation.McpResource;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 /**
  * Resource de información de usuario usando anotaciones MCP con template URI
  * <p>
- * Con @McpResource y {userId}, Spring AI automáticamente: - Registra el resource template - Extrae
+ * Con @McpResource y {userId}, Spring AI automáticamente: - Registra el
+ * resource template - Extrae
  * el parámetro de la URI - Inyecta el parámetro en el metodo
  * <p>
- * IMPORTANTE: Para ASYNC server, el metodo debe retornar Mono<ReadResourceResult>
+ * IMPORTANTE: Para ASYNC server, el metodo debe retornar
+ * Mono<ReadResourceResult>
  */
 @Slf4j
 @Component
@@ -33,11 +36,8 @@ public class UserInfoResource {
         this.getUserInfoUseCase = getUserInfoUseCase;
     }
 
-    @McpResource(
-            uri = "resource://users/{userId}",
-            name = "user-info",
-            description = "Obtiene información detallada de un usuario por su ID desde la API de Simpsons"
-    )
+    @McpResource(uri = "resource://users/{userId}", name = "user-info", description = "Obtiene información detallada de un usuario por su ID desde la API de Simpsons")
+    @PreAuthorize("hasAnyRole('MCP.RESOURCE.USER.READ', 'MCP.ADMIN')")
     public Mono<ReadResourceResult> getUserInfo(String userId) {
         log.info("📥 Solicitud de información para userId: {}", userId);
 
@@ -83,9 +83,7 @@ public class UserInfoResource {
                 List.of(new TextResourceContents(
                         "resource://users/" + userId,
                         MediaType.APPLICATION_JSON_VALUE,
-                        toJson(userInfo)
-                ))
-        );
+                        toJson(userInfo))));
     }
 
     /**
@@ -103,9 +101,7 @@ public class UserInfoResource {
                 List.of(new TextResourceContents(
                         "resource://users/" + userId,
                         MediaType.APPLICATION_JSON_VALUE,
-                        toJson(errorResponse)
-                ))
-        );
+                        toJson(errorResponse))));
     }
 
     @SneakyThrows

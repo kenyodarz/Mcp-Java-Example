@@ -7,33 +7,33 @@ import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import java.util.List;
 import org.springaicommunity.mcp.annotation.McpArg;
 import org.springaicommunity.mcp.annotation.McpPrompt;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 /**
  * Prompt de saludo usando anotaciones MCP
  * <p>
- * Con @McpPrompt y @McpArg, Spring AI automáticamente: - Registra el prompt con sus argumentos -
+ * Con @McpPrompt y @McpArg, Spring AI automáticamente: - Registra el prompt con
+ * sus argumentos -
  * Genera el schema de argumentos - Valida los argumentos requeridos
  */
 @Component
 public class SaludoPrompt {
 
-    @McpPrompt(
-            name = "saludo",
-            description = "Genera un prompt de saludo personalizable"
-    )
+    @McpPrompt(name = "saludo", description = "Genera un prompt de saludo personalizable")
+    @PreAuthorize("hasAnyRole('MCP.PROMPT.BASIC', 'MCP.ADMIN')")
     public Mono<GetPromptResult> getSaludoPrompt(
-            @McpArg(name = "nombre", required = true) String nombre
-    ) {
+            @McpArg(name = "nombre", required = true) String nombre) {
         return Mono.fromCallable(() -> {
 
             /*
              * Nota Importante:
              * Aunque @McpArg(required = true) valida que 'nombre' no sea null,
-             *  es recomendable agregar validaciones adicionales según las reglas de negocio.
+             * es recomendable agregar validaciones adicionales según las reglas de negocio.
+             *
              * @McpArg(required = true) solo valida cuando la llamada viene del runtime MCP,
-             *  no cuando tú llamas el metodo directamente desde código o tests.
+             * no cuando tú llamas el metodo directamente desde código o tests.
              */
             if (nombre == null || nombre.isBlank()) {
                 throw new IllegalArgumentException("El nombre es obligatorio");
@@ -43,8 +43,7 @@ public class SaludoPrompt {
 
             PromptMessage message = new PromptMessage(
                     Role.USER,
-                    new TextContent(promptText)
-            );
+                    new TextContent(promptText));
 
             return new GetPromptResult("Saludo base", List.of(message));
         });

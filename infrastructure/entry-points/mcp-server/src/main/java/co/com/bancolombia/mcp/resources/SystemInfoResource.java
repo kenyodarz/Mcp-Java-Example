@@ -8,13 +8,15 @@ import java.util.Map;
 import lombok.SneakyThrows;
 import org.springaicommunity.mcp.annotation.McpResource;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 /**
  * Resource de información del sistema usando anotaciones MCP
  * <p>
- * Con @McpResource, Spring AI automáticamente: - Registra el resource con la URI especificada -
+ * Con @McpResource, Spring AI automáticamente: - Registra el resource con la
+ * URI especificada -
  * Maneja las peticiones de lectura - Serializa la respuesta
  */
 @Component
@@ -26,11 +28,8 @@ public class SystemInfoResource {
         this.objectMapper = objectMapper;
     }
 
-    @McpResource(
-            uri = "resource://system/info",
-            name = "system-info",
-            description = "Proporciona información básica del sistema y metadata del servidor MCP"
-    )
+    @McpResource(uri = "resource://system/info", name = "system-info", description = "Proporciona información básica del sistema y metadata del servidor MCP")
+    @PreAuthorize("hasAnyRole('MCP.RESOURCE.SYSTEM.READ', 'MCP.ADMIN')")
     public Mono<ReadResourceResult> getSystemInfo() {
         return Mono.fromCallable(() -> {
             Map<String, Object> info = Map.of(
@@ -39,16 +38,13 @@ public class SystemInfoResource {
                     "status", "UP",
                     "reactive", true,
                     "capabilities", List.of("tools", "resources", "prompts"),
-                    "timestamp", System.currentTimeMillis()
-            );
+                    "timestamp", System.currentTimeMillis());
 
             return new ReadResourceResult(
                     List.of(new TextResourceContents(
                             "resource://system/info",
                             MediaType.APPLICATION_JSON_VALUE,
-                            toJson(info)
-                    ))
-            );
+                            toJson(info))));
         });
     }
 

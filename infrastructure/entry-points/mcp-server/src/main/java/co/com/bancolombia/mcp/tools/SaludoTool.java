@@ -3,6 +3,7 @@ package co.com.bancolombia.mcp.tools;
 import lombok.extern.slf4j.Slf4j;
 import org.springaicommunity.mcp.annotation.McpTool;
 import org.springaicommunity.mcp.annotation.McpToolParam;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -18,14 +19,10 @@ import reactor.core.publisher.Mono;
 @Component
 public class SaludoTool {
 
-    @McpTool(
-            name = "saludoTool",
-            description = "Genera un saludo personalizado reactivo para el usuario"
-    )
+    @McpTool(name = "saludoTool", description = "Genera un saludo personalizado reactivo para el usuario")
+    @PreAuthorize("hasAnyRole('MCP.TOOL.INTERACTION', 'MCP.ADMIN')")
     public Mono<String> saludo(
-            @McpToolParam(description = "Nombre de la persona a saludar", required = true)
-            String name
-    ) {
+            @McpToolParam(description = "Nombre de la persona a saludar", required = true) String name) {
         return Mono.fromCallable(() -> {
             if (name == null || name.trim().isEmpty()) {
                 log.warn("Intento de saludo con nombre vacío");
@@ -34,8 +31,7 @@ public class SaludoTool {
 
             String greeting = String.format(
                     "¡Hola %s! Bienvenido al servidor MCP de Bancolombia. ¿En qué puedo ayudarte hoy?",
-                    name.trim()
-            );
+                    name.trim());
 
             log.info("Saludo generado para: {}", name);
             return greeting;
