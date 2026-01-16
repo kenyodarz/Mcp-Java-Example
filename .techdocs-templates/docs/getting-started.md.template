@@ -1,0 +1,95 @@
+# Primeros Pasos
+
+Guía para configurar y comenzar a utilizar {{PROJECT_NAME}}.
+
+---
+
+## 📋 Prerequisitos
+
+### Software Requerido
+
+- **[Lenguaje/Runtime]**: Versión mínima
+- **[Gestor de dependencias]**: Para instalar paquetes
+- **Git**: Para clonar el repositorio
+
+---
+
+## 🚀 Instalación
+
+### 1. Clonar el Repositorio
+
+```bash
+git clone [URL_DEL_REPOSITORIO]
+cd [NOMBRE_DEL_PROYECTO]
+```
+
+### 2. Instalar Dependencias
+
+```bash
+# Comando según tu stack
+# Ejemplo Python: pip install -r requirements.txt
+# Ejemplo Node: npm install
+# Ejemplo Java: gradle build
+```
+
+### 3. Configuración
+
+Crea un archivo de configuración con las variables necesarias:
+
+```bash
+# Variables de entorno
+VARIABLE_1=valor1
+VARIABLE_2=valor2
+```
+
+---
+
+## 🎯 Ejecutar el Servidor
+
+```bash
+# Comando para ejecutar
+# Ejemplo: python main.py
+# Ejemplo: npm start
+# Ejemplo: gradle bootRun
+```
+
+Verificar que está corriendo:
+
+```bash
+curl http://localhost:PORT/health
+```
+
+---
+
+## 🔧 Configuración de Clientes MCP
+
+### Claude Desktop
+
+```json
+{
+  "mcpServers": {
+    "{{PROJECT_NAME}}": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sse-client",
+        "http://localhost:PORT/mcp"
+      ]
+    }
+  }
+}
+```
+
+---
+
+## 🎯 Tu Primera Consulta
+
+*Documenta aquí un ejemplo de uso*
+
+---
+
+## 📚 Siguientes Pasos
+
+1. **[Arquitectura](architecture.md)**: Entiende cómo funciona
+2. **[API Reference](api-reference.md)**: Conoce las herramientas
+3. **[Security](security.md)**: Configura seguridad

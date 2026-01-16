@@ -1,0 +1,61 @@
+# API Reference
+
+Documentación completa de las herramientas disponibles.
+
+---
+
+## 🔧 Tools
+
+### `tool_name_1`
+
+Descripción breve del tool.
+
+**Parámetros**:
+
+| Parámetro | Tipo | Requerido | Descripción |
+|-----------|------|-----------|-------------|
+| `param1` | String | Sí | Descripción del parámetro |
+| `param2` | String | No | Descripción del parámetro |
+
+**Retorno**:
+```json
+{
+  "field1": "value",
+  "field2": "value"
+}
+```
+
+**Ejemplo con cURL**:
+```bash
+curl -X POST http://localhost:PORT/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "method": "tools/call",
+    "params": {
+      "name": "tool_name_1",
+      "arguments": {
+        "param1": "value"
+      }
+    }
+  }'
+```
+
+---
+
+### `tool_name_2`
+
+*Repite la estructura para cada tool*
+
+---
+
+## 📋 Listar Tools Disponibles
+
+```bash
+curl -X POST http://localhost:PORT/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"method": "tools/list"}'
+```
+
+---
+
+**💡 Tip**: Documenta cada tool con ejemplos reales de uso.
