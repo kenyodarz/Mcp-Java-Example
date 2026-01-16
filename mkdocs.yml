@@ -1,0 +1,19 @@
+site_name: 'Code Review MCP Server'
+site_description: 'Servidor MCP para análisis de código con Clean Architecture y Spring AI'
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Architecture: architecture.md
+  - API Reference: api-reference.md
+  - Security: security.md
+  - Troubleshooting: troubleshooting.md
+
+plugins:
+  - techdocs-core
+
+theme:
+  name: material
+  palette:
+    primary: 'blue'
+    accent: 'blue'
