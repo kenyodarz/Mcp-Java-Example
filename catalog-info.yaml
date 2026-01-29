@@ -89,7 +89,7 @@ metadata:
 spec:
   type: mcp
   lifecycle: production
-  owner: group:default/practicas-ingenieria-software
+  owner: group:default/exodia
   system: inteligencia-artificial
 
   definition: |
