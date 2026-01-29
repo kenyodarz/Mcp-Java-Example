@@ -22,7 +22,7 @@ metadata:
     # GitHub Annotations (CRÍTICAS para TechDocs)
     # ============================================
     github.com/project-slug: 'kenyodarz/Mcp-Java-Example'
-    backstage.io/source-location: 'url:https://github.com/kenyodarz/Mcp-Java-Example'
+    backstage.io/source-location: 'https://github.com/kenyodarz/Mcp-Java-Example/tree/main/'
 
     # Build type - indica que usa GitHub Actions
     kaizen.bancolombia.com/build-type: 'githubactions'
@@ -30,7 +30,7 @@ metadata:
     # ============================================
     # TechDocs Configuration
     # ============================================
-    backstage.io/techdocs-ref: dir:.
+    backstage.io/techdocs-ref: 'dir:.'
 
     # ============================================
     # MCP Server URLs (Ambientes)
