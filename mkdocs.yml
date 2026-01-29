@@ -1,5 +1,5 @@
-site_name: 'Code Review MCP Server'
-site_description: 'Servidor MCP para análisis de código con Clean Architecture y Spring AI'
+site_name: 'Bancolombia MCP Server'
+site_description: 'Servidor MCP reactivo basado en Java, Spring AI y Clean Architecture'
 
 nav:
   - Home: index.md

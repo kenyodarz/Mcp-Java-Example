@@ -1,4 +1,6 @@
-# Proyecto Base Implementando Clean Architecture
+# Bancolombia MCP Server
+
+Servidor MCP reactivo basado en Java, Spring AI y Clean Architecture.
 
 ## Antes de Iniciar
 
