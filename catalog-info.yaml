@@ -12,44 +12,53 @@ metadata:
     - mcp
     - ai
     - clean-architecture
-    - azure-devops
+    - github
     - java
-    - aws
+    - spring-ai
     - devops
 
   annotations:
-    # URLs del MCP Server (Locales para desarrollo)
+    # ============================================
+    # GitHub Annotations (CRÍTICAS para TechDocs)
+    # ============================================
+    github.com/project-slug: 'kenyodarz/Mcp-Java-Example'
+    backstage.io/source-location: 'url:https://github.com/kenyodarz/Mcp-Java-Example'
+
+    # Build type - indica que usa GitHub Actions
+    kaizen.bancolombia.com/build-type: 'githubactions'
+
+    # ============================================
+    # TechDocs Configuration
+    # ============================================
+    backstage.io/techdocs-ref: dir:.
+
+    # ============================================
+    # MCP Server URLs (Ambientes)
+    # ============================================
     server-url: 'http://localhost:8080/mcp/stream'
     server-url-dev: 'http://localhost:8080/mcp/stream'
     server-url-qa: 'http://localhost:8080/mcp/stream'
 
-    # Proyecto de Azure DevOps
-    dev.azure.com/project: 'b267af7c-3233-4ad1-97b3-91083943100d'
-    dev.azure.com/project-repo: 'NU1041001_Mcp_Server_MR'
-    dev.azure.com/build-definition: '55727'
-
-    # Ubicación del código fuente
-    backstage.io/source-location: 'url:https://github.com/kenyodarz/Mcp-Java-Example'
-
-    # TechDocs
-    backstage.io/techdocs-ref: dir:.
-
-    # MCP Specs
+    # ============================================
+    # MCP Protocol Specifications
+    # ============================================
     mcp.io/protocol-version: '2025-06-18'
     mcp.io/server-type: 'streamable-http'
 
-    # Arquitectura
+    # ============================================
+    # Architecture Metadata
+    # ============================================
     architecture.bancolombia.com/pattern: 'clean-architecture'
     architecture.bancolombia.com/language: 'java'
     architecture.bancolombia.com/framework: 'spring-ai-mcp'
 
   links:
     - url: 'https://github.com/kenyodarz/Mcp-Java-Example'
-      title: 'Código Fuente'
-      icon: 'code'
+      title: 'Código Fuente (GitHub)'
+      icon: 'github'
 
-    - url: 'http://localhost:8080/_build?definitionId=55727'
-      title: 'Azure Pipeline'
+    - url: 'https://github.com/kenyodarz/Mcp-Java-Example/actions'
+      title: 'GitHub Actions'
       icon: 'build'
 
     - url: 'http://localhost:8080/mcp/stream'
@@ -85,6 +94,7 @@ metadata:
 
   annotations:
     server-url: 'http://localhost:8080/mcp/stream'
+    github.com/project-slug: 'kenyodarz/Mcp-Java-Example'
 
 spec:
   type: mcp
