@@ -4,52 +4,45 @@ metadata:
   name: mcp-bancolombia
   title: Bancolombia MCP Server
   description: |
-    Servidor MCP (Model Context Protocol) reactivo basado en Java y Spring AI. 
-    Proporciona herramientas de saludo, salud del sistema y acceso a información de usuarios.
-    Implementa Clean Architecture y seguridad via API Key.
+    El MCP de Bancolombia (Java) cuenta con herramientas y recursos que permiten interactuar con el servidor 
+    para obtener información del sistema, saludos personalizados y datos de usuario, utilizando la 
+    potencia de Spring AI y Clean Architecture.
 
   tags:
     - mcp
     - ai
-    - java
-    - spring-boot
-    - spring-ai
-    - reactive
     - clean-architecture
-    - bancolombia
-  
-  # Anotaciones para detección y configuración
+    - azure-devops
+    - java
+    - aws
+    - devops
+
   annotations:
-    # URL del servidor MCP en PRODUCCIÓN
+    # URLs del MCP Server (Locales para desarrollo)
     server-url: 'http://localhost:8080/mcp/stream'
-    
-    # URLs adicionales por ambiente
     server-url-dev: 'http://localhost:8080/mcp/stream'
     server-url-qa: 'http://localhost:8080/mcp/stream'
-    
+
     # Proyecto de Azure DevOps
     dev.azure.com/project: 'b267af7c-3233-4ad1-97b3-91083943100d'
     dev.azure.com/project-repo: 'NU1041001_Mcp_Server_MR'
-    
-    # Pipeline de build
     dev.azure.com/build-definition: '55727'
-    
-    # Ubicación del código fuente en el repositorio
-    backstage.io/source-location: 'url:https://dev.azure.com/grupobancolombia/b267af7c-3233-4ad1-97b3-91083943100d/_git/NU1041001_Mcp_Server_MR?path=/demo_mcp_server'
-    
+
+    # Ubicación del código fuente
+    backstage.io/source-location: 'url:https://github.com/kenyodarz/Mcp-Java-Example'
+
     # TechDocs
     backstage.io/techdocs-ref: dir:.
-    
-    # Tipo de servidor MCP y protocolo
-    mcp.io/protocol-version: '2024-11-05'
-    mcp.io/server-type: 'stateless-http'
-    
-    # Información de arquitectura
+
+    # MCP Specs
+    mcp.io/protocol-version: '2025-06-18'
+    mcp.io/server-type: 'streamable-http'
+
+    # Arquitectura
     architecture.bancolombia.com/pattern: 'clean-architecture'
     architecture.bancolombia.com/language: 'java'
     architecture.bancolombia.com/framework: 'spring-ai-mcp'
 
-  # Links
   links:
     - url: 'https://github.com/kenyodarz/Mcp-Java-Example'
       title: 'Código Fuente'
@@ -60,7 +53,7 @@ metadata:
       icon: 'build'
 
     - url: 'http://localhost:8080/mcp/stream'
-      title: 'Endpoint MCP (Producción)'
+      title: 'Endpoint MCP (Local)'
       icon: 'cloud'
 
     - url: 'https://modelcontextprotocol.io/docs'
@@ -70,60 +63,68 @@ metadata:
 spec:
   type: mcp
   lifecycle: production
-  owner: group:default/practicas-ingenieria-software
+  owner: group:default/exodia
   system: inteligencia-artificial
-  
-  # APIs que proporciona (MCP Tools/Resources/Prompts)
+  subcomponentOf: component:default/mcp-servers-monorepo
+
   providesApis:
     - mcp-bancolombia-api
 
 ---
-# Definición del API MCP proporcionada
+
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   name: mcp-bancolombia-api
   title: Bancolombia MCP API
-  description: API del protocolo MCP que expone herramientas, recursos y prompts
+  description: API MCP que expone las herramientas, recursos y prompts del servidor Java reactivo.
+
   tags:
     - mcp
     - api
-    - java
-  
+
   annotations:
-    server-url: 'https://inteligenciaartificial-int.apps.bancolombia.com/vsti-mcp/mcp'
+    server-url: 'http://localhost:8080/mcp/stream'
 
 spec:
   type: mcp
   lifecycle: production
   owner: group:default/practicas-ingenieria-software
   system: inteligencia-artificial
-  
-  # Definición de capacidades disponibles
+
   definition: |
-    # Bancolombia MCP Capabilities
-    
-    ## Tools
+    # Bancolombia MCP Tools
+
+    ## Available Tools
     
     ### 1. saludoTool
     **Descripción**: Genera un saludo personalizado reactivo para el usuario.
-    **Parámetros**:
-    - `name` (string, requerido): Nombre de la persona a saludar.
+    
+    **Parámetros**
+    - `name` (string requerido): Nombre de la persona a saludar.
+    
+    **Retorna**
+    - `greeting` (string): Mensaje de saludo personalizado de bienvenida al servidor MCP de Bancolombia.
+    
+    ---
     
     ### 2. healthCheck
-    **Descripción**: Verifica el estado del servidor MCP. Retorna 'OK' si todo funciona correctamente.
+    **Descripción**: Verifica el estado del servidor MCP.
+    
+    **Retorna**
+    - `status` (string): 'OK' si el servidor está funcionando correctamente y los componentes reactivos están activos.
     
     ---
     
     ## Resources
     
     ### 1. system-info
+    **Descripción**: Proporciona información básica del sistema y metadata del servidor MCP (versión, estado, capacidades).
     **URI**: `resource://system/info`
-    **Descripción**: Proporciona información básica del sistema y metadata del servidor MCP.
     
     ### 2. user-info
+    **Descripción**: Obtiene información detallada de un usuario por su ID desde la API de Simpsons.
     **URI**: `resource://users/{userId}`
-    **Descripción**: Obtiene información detallada de un usuario por su ID.
     
     ---
     
@@ -132,16 +133,17 @@ spec:
     ### 1. saludo
     **Descripción**: Genera un prompt de saludo personalizable.
     **Argumentos**:
-    - `nombre` (string, requerido): Nombre de la persona a saludar.
+    - `nombre` (string requerido): Nombre de la persona a saludar.
     
     ### 2. bienvenida
     **Descripción**: Genera un prompt de bienvenida formal con título opcional.
     **Argumentos**:
-    - `titulo` (string, opcional): Título o nombre para la bienvenida.
-    
-    ---
-    
+    - `titulo` (string opcional): Título o nombre para la bienvenida.
+
     ## Protocolo
-    - **Host**: Spring Boot / Spring AI
-    - **Transport**: SSE over HTTP
+    - **Versión**: MCP 2025-06-18
+    - **Formato**: JSON-RPC 2.0
+    - **Transport**: SSE (Server-Sent Events) over HTTP
+    - **Content-Type**: application/json
+    - **Accept**: text/event-stream, application/json
     - **Endpoint**: /mcp/stream
