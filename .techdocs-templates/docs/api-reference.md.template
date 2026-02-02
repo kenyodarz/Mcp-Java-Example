@@ -1,61 +1,67 @@
-# API Reference
+# Referencia de API (Tools & Prompts)
 
-Documentación completa de las herramientas disponibles.
+Aquí encontrarás el "Menú" completo de lo que este servidor ofrece.
+
+> **📝 Instrucción**: Esta sección es la más importante para los usuarios. Sé detallado con los ejemplos.
 
 ---
 
-## 🔧 Tools
+## 🛠️ Herramientas (Tools)
 
-### `tool_name_1`
+Las herramientas son funciones que el LLM puede ejecutar.
 
-Descripción breve del tool.
+### `nombre_de_la_herramienta`
 
-**Parámetros**:
+> **Descripción**: Explica qué hace esta herramienta en lenguaje natural.
+> *Ejemplo: "Consulta el saldo actual de una cuenta de ahorros dado su número."*
 
-| Parámetro | Tipo | Requerido | Descripción |
+#### 📥 Inputs (Argumentos)
+
+| Argumento | Tipo | Requerido | Descripción |
 |-----------|------|-----------|-------------|
-| `param1` | String | Sí | Descripción del parámetro |
-| `param2` | String | No | Descripción del parámetro |
+| `accountId` | String | Sí | El número de cuenta (ej. 12345-6) |
+| `currency` | String | No | Moneda (default: COP) |
 
-**Retorno**:
+#### 📤 Output (Resultados)
+
+Lo que la herramienta devuelve al modelo.
+
 ```json
 {
-  "field1": "value",
-  "field2": "value"
+  "balance": 150000.00,
+  "currency": "COP",
+  "status": "ACTIVE"
 }
 ```
 
-**Ejemplo con cURL**:
-```bash
-curl -X POST http://localhost:PORT/mcp \
-  -H "Content-Type: application/json" \
-  -d '{
-    "method": "tools/call",
-    "params": {
-      "name": "tool_name_1",
-      "arguments": {
-        "param1": "value"
-      }
-    }
-  }'
-```
+#### 💬 Ejemplo de Prompt
+
+Qué tiene que preguntar el usuario para activar esto:
+
+> *"¿Cuál es el saldo de la cuenta 12345?"*
 
 ---
 
-### `tool_name_2`
+### `otra_herramienta`
 
-*Repite la estructura para cada tool*
-
----
-
-## 📋 Listar Tools Disponibles
-
-```bash
-curl -X POST http://localhost:PORT/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"method": "tools/list"}'
-```
+*(Repetir estructura para cada herramienta)*
 
 ---
 
-**💡 Tip**: Documenta cada tool con ejemplos reales de uso.
+## 📝 Prompts Predefinidos (Templates)
+
+Los prompts son plantillas de texto que ayudan al usuario a empezar.
+
+### `analizar_codigo`
+
+- **Descripción**: Ayuda a revisar código buscando vulnerabilidades.
+- **Argumentos**:
+  - `code`: El código a analizar.
+
+---
+
+## 📚 Recursos (Resources)
+
+Datos estáticos o dinámicos que el servidor expone como texto.
+
+- **`config://app-settings`**: Devuelve la configuración actual de la aplicación.

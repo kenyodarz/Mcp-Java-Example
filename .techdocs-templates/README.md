@@ -1,151 +1,77 @@
-# TechDocs Templates
+# TechDocs Templates 📚
 
-Esta carpeta contiene plantillas base para crear documentación TechDocs en proyectos MCP.
+Esta carpeta contiene plantillas base ("scaffolding") para crear documentación técnica de alta
+calidad para servidores MCP y otros proyectos.
+
+> **Objetivo**: Facilitar la creación de documentación estándar, explicativa y fácil de mantener ("
+> For Dummies").
 
 ## 📁 Contenido
 
-- `mkdocs.yml.template` - Configuración base de MkDocs
-- `docs/` - Plantillas de páginas Markdown
-    - `index.md.template` - Página principal
-    - `getting-started.md.template` - Guía de inicio
-    - `architecture.md.template` - Documentación de arquitectura
-    - `api-reference.md.template` - Referencia del API
-    - `security.md.template` - Guía de seguridad
-    - `troubleshooting.md.template` - Solución de problemas
+- `mkdocs.yml.template` - Configuración base de MkDocs.
+- `docs/` - Plantillas de páginas Markdown:
+  - `index.md.template` - Home / Overview.
+  - `getting-started.md.template` - Guía de inicio paso a paso.
+  - `architecture.md.template` - Diagramas y decisiones de diseño.
+  - `api-reference.md.template` - Documentación de Tools y Prompts.
+  - `security.md.template` - Guía de seguridad y autenticación.
+  - `troubleshooting.md.template` - Solución de problemas comunes.
 
 ## 🚀 Cómo Usar
 
-### 1. Copiar Templates a tu Proyecto
+### 1. Copiar Templates
+
+Copia el contenido de esta carpeta a la raíz de tu proyecto:
 
 ```bash
-# Copiar mkdocs.yml
-cp .techdocs-templates/mkdocs.yml.template ./mkdocs.yml
-
-# Copiar docs/
-cp -r .techdocs-templates/docs ./docs
+# PowerShell
+Copy-Item -Path .techdocs-templates/mkdocs.yml.template -Destination ./mkdocs.yml
+Copy-Item -Path .techdocs-templates/docs -Destination ./ -Recurse
 ```
 
-### 2. Personalizar
+### 2. Renombrar Archivos
 
-Reemplaza los placeholders en los archivos:
-
-- `{{PROJECT_NAME}}` - Nombre de tu proyecto
-- `{{DESCRIPTION}}` - Descripción breve
-- `{{TEAM}}` - Nombre del equipo
-- `{{TOOLS_COUNT}}` - Número de tools MCP
-- `{{FRAMEWORK}}` - Framework usado (FastMCP, Spring AI, etc.)
-
-### 3. Renombrar Archivos
-
-```bash
-# Remover extensión .template
-cd docs
-ren *.template *.
-```
-
-O en PowerShell:
+Elimina la extensión `.template` de los archivos copiados en `docs/`:
 
 ```powershell
-Get-ChildItem -Filter "*.template" | Rename-Item -NewName {$_.name -replace '.template',''}
+Get-ChildItem ./docs -Filter "*.template" | Rename-Item -NewName {$_.name -replace '.template',''}
 ```
 
-### 4. Actualizar catalog-info.yaml
+### 3. Reemplazar Variables
 
-Agrega la anotación de TechDocs:
+Busca y reemplaza los siguientes placeholders en todos los archivos `.md` y `mkdocs.yml`:
 
-```yaml
-metadata:
-  annotations:
-    backstage.io/techdocs-ref: dir:.
-```
+| Variable           | Descripción              | Ejemplo                                   |
+|--------------------|--------------------------|-------------------------------------------|
+| `{{PROJECT_NAME}}` | Nombre del proyecto      | `Bancolombia MCP Server`                  |
+| `{{DESCRIPTION}}`  | Descripción corta        | `Servidor MCP para consulta de saldos...` |
+| `{{TEAM}}`         | Equipo responsable       | `Equipo de Arquitectura`                  |
+| `{{TOOLS_COUNT}}`  | Cantidad de herramientas | `5`                                       |
+| `{{FRAMEWORK}}`    | Tecnología base          | `Spring AI` / `FastMCP`                   |
+| `{{REPO_URL}}`     | URL del repositorio git  | `https://github.com/org/repo`             |
+| `{{JAVA_VERSION}}` | Versión de Java          | `17`                                      |
+| `{{SERVER_URL}}`   | URL base del servidor    | `http://localhost:8080`                   |
 
-### 5. Previsualizar
+### 4. Personalizar Contenido
 
-```bash
-npx @techdocs/cli serve
-```
+Sigue las instrucciones marcadas con **📝 Instrucción** o **💡 Tip** dentro de cada archivo para
+completar la información específica de tu proyecto.
 
-Abre `http://localhost:3000`
+## 📝 Estructura de Navegación
 
-## 📝 Estructura Recomendada
-
-### Para APIs/Servicios MCP
-
-```
-docs/
-├── index.md              # Overview del servidor
-├── getting-started.md    # Setup e instalación
-├── architecture.md       # Clean Architecture, componentes
-├── api-reference.md      # Tools, Resources, Prompts
-├── security.md           # Autenticación, API Keys
-└── troubleshooting.md    # Problemas comunes
-```
-
-### Para Librerías/SDKs
-
-```
-docs/
-├── index.md              # Overview de la librería
-├── installation.md       # Instalación
-├── quick-start.md        # Primeros pasos
-├── guides/
-│   ├── basic-usage.md
-│   └── advanced.md
-├── api-reference/
-│   └── classes.md
-└── examples/
-    └── simple.md
-```
-
-## ✨ Características de las Templates
-
-- ✅ **Estructura TechDocs**: Sigue las mejores prácticas
-- ✅ **Emojis**: Para mejor escaneabilidad
-- ✅ **Ejemplos de código**: Con syntax highlighting
-- ✅ **Enlaces internos**: Cross-references
-- ✅ **Secciones estándar**: Consistentes entre proyectos
-
-## 🎨 Personalización
-
-### Cambiar Tema
-
-En `mkdocs.yml`:
-
-```yaml
-theme:
-  name: material
-  palette:
-    primary: 'indigo'  # Cambiar color
-    accent: 'indigo'
-```
-
-### Agregar Plugins
-
-```yaml
-plugins:
-  - techdocs-core
-  - search
-  - mermaid2  # Para diagramas
-```
-
-### Agregar Páginas
-
-1. Crea el archivo `.md` en `docs/`
-2. Agrégalo a `nav` en `mkdocs.yml`:
+El archivo `mkdocs.yml` ya viene configurado con esta estructura estándar:
 
 ```yaml
 nav:
   - Home: index.md
-  - Nueva Página: nueva-pagina.md
+  - Getting Started: getting-started.md
+  - Architecture: architecture.md
+  - API Reference: api-reference.md
+  - Security: security.md
+  - Troubleshooting: troubleshooting.md
 ```
-
-## 📚 Recursos
-
-- [Guía de Previsualización](../TECHDOCS_PREVIEW_GUIDE.md)
-- [Documentación TechDocs](https://backstage.io/docs/features/techdocs/)
-- [Guía de Estilo](../techdocs.md)
 
 ---
 
-**💡 Tip**: Mantén la documentación simple y enfocada. Es mejor tener docs concisas y actualizadas
-que extensas y obsoletas.
+**💡 Tip**: Mantén la documentación simple. Es mejor tener poca documentación actualizada que mucha
+desactualizada.

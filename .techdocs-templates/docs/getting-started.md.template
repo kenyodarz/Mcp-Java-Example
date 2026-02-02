@@ -1,95 +1,96 @@
-# Primeros Pasos
+# Guía de Inicio (Getting Started)
 
-Guía para configurar y comenzar a utilizar {{PROJECT_NAME}}.
+Esta guía te llevará de **0 a 100** para tener {{PROJECT_NAME}} corriendo en tu máquina local.
 
----
+## 📋 Prerrequisitos
 
-## 📋 Prerequisitos
+Antes de empezar, asegúrate de tener instalado:
 
-### Software Requerido
-
-- **[Lenguaje/Runtime]**: Versión mínima
-- **[Gestor de dependencias]**: Para instalar paquetes
-- **Git**: Para clonar el repositorio
-
----
-
-## 🚀 Instalación
-
-### 1. Clonar el Repositorio
-
-```bash
-git clone [URL_DEL_REPOSITORIO]
-cd [NOMBRE_DEL_PROYECTO]
-```
-
-### 2. Instalar Dependencias
-
-```bash
-# Comando según tu stack
-# Ejemplo Python: pip install -r requirements.txt
-# Ejemplo Node: npm install
-# Ejemplo Java: gradle build
-```
-
-### 3. Configuración
-
-Crea un archivo de configuración con las variables necesarias:
-
-```bash
-# Variables de entorno
-VARIABLE_1=valor1
-VARIABLE_2=valor2
-```
+1. **Java Development Kit (JDK)**: Versión {{JAVA_VERSION}} o superior.
+   - *Verificar*: `java -version`
+2. **Git**: Para descargar el código.
+   - *Verificar*: `git --version`
+3. **Claude Desktop** (Opcional): Para probar el servidor.
 
 ---
 
-## 🎯 Ejecutar el Servidor
+## 🚀 Paso 1: Descargar y Preparar
 
-```bash
-# Comando para ejecutar
-# Ejemplo: python main.py
-# Ejemplo: npm start
-# Ejemplo: gradle bootRun
-```
+1. **Clona el repositorio**:
+   ```bash
+   git clone {{REPO_URL}}
+   cd {{PROJECT_NAME}}
+   ```
 
-Verificar que está corriendo:
+2. **Compila el proyecto**:
+   
+   En Windows:
+   ```powershell
+   ./gradlew build
+   ```
+   
+   En Mac/Linux:
+   ```bash
+   ./gradlew build
+   ```
 
-```bash
-curl http://localhost:PORT/health
-```
+> **✅ Éxito si**: Ves un mensaje que dice `BUILD SUCCESSFUL`.
 
 ---
 
-## 🔧 Configuración de Clientes MCP
+## ⚙️ Paso 2: Configuración (Environment)
 
-### Claude Desktop
+Este proyecto necesita algunas variables de entorno para funcionar.
+
+1. Crea una copia del archivo de ejemplo (si existe) o crea un archivo `.env` (o edita tu configuración de Run en IntelliJ).
+2. Configura las siguientes variables:
+
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `SERVER_PORT` | Puerto del servidor | `8080` |
+| `LOG_LEVEL` | Nivel de logs | `INFO` |
+| `OTRA_VAR` | [Descripción] | `valor` |
+
+---
+
+## ▶️ Paso 3: Ejecutar
+
+Corre el servidor con:
+
+```bash
+./gradlew bootRun
+```
+
+Deberías ver logs de Spring Boot iniciando. 
+Cuando veas: `Tomcat started on port(s): 8080`, ¡estás listo!
+
+---
+
+## 🤖 Paso 4: Conectar a Claude Desktop
+
+Para usar este servidor desde Claude, edita tu archivo de configuración:
+
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Mac**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+Agrega esto dentro de `mcpServers`:
 
 ```json
-{
-  "mcpServers": {
-    "{{PROJECT_NAME}}": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sse-client",
-        "http://localhost:PORT/mcp"
-      ]
-    }
-  }
+"{{PROJECT_NAME}}": {
+  "command": "java",
+  "args": [
+    "-jar",
+    "RUTA_ABSOLUTA_A/{{PROJECT_NAME}}/build/libs/app.jar"
+  ]
 }
 ```
 
----
-
-## 🎯 Tu Primera Consulta
-
-*Documenta aquí un ejemplo de uso*
+> **💡 Tip**: Asegúrate de usar rutas absolutas y barras dobles `\\` en Windows.
 
 ---
 
-## 📚 Siguientes Pasos
+## 🧪 Paso 5: Probar
 
-1. **[Arquitectura](architecture.md)**: Entiende cómo funciona
-2. **[API Reference](api-reference.md)**: Conoce las herramientas
-3. **[Security](security.md)**: Configura seguridad
+1. Reinicia Claude Desktop.
+2. Busca el ícono de "enchufe" 🔌. Deberías ver `{{PROJECT_NAME}}` conectado en verde.
+3. Pregúntale algo: *"Hola, ¿qué herramientas tienes?"*

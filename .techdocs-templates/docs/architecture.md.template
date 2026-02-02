@@ -1,0 +1,63 @@
+# Arquitectura del Sistema
+
+Esta página describe la arquitectura técnica de **{{PROJECT_NAME}}**. Su objetivo es dar una visión clara de cómo está construido el sistema y por qué se tomaron ciertas decisiones.
+
+## 🏗️ Diagrama de Componentes (C4 Nivel 2)
+
+> **📝 Instrucción**: Inserta aquí un diagrama que muestre cómo interactúa este servidor MCP con otros sistemas (ej. Claude Desktop, APIs bancarias, base de datos).
+>
+> Puedes usar Mermaid para esto. Reemplaza el ejemplo de abajo con tu diagrama real.
+
+```mermaid
+graph TD
+    User[Usuario (Claude/Cursor)] -->|HTTP/SSE| MCP[MCP Server]
+    MCP -->|JPA| DB[(Base de Datos)]
+    MCP -->|REST| ExtAPI[API Externa]
+```
+
+### Descripción de Componentes
+
+| Componente | Responsabilidad | Tecnología |
+|------------|-----------------|------------|
+| **MCP Server** | Provee herramientas de IA | Spring AI / {{FRAMEWORK}} |
+| **Base de Datos** | Persistencia de datos | PostgreSQL / H2 |
+| **Cliente** | Consume el servidor MCP | Claude Desktop / Cursor |
+
+---
+
+## 🏛️ Estructura del Código (Clean Architecture)
+
+Este proyecto sigue **Clean Architecture** para mantener el código desacoplado y testearle.
+
+- **📂 domain**: Reglas de negocio puras. No depende de frameworks.
+  - *Modelos, Puertos (Interfaces), Casos de Uso*.
+- **📂 application**: Orquestación. Implementa los casos de uso.
+- **📂 infrastructure**: Detalles técnicos.
+  - *Controladores REST, Repositorios JPA, Clientes HTTP*.
+- **📂 boot**: Configuración de arranque de Spring Boot.
+
+> **📝 Para Dummies**:
+> - Si cambias la base de datos, solo tocas `infrastructure`.
+> - Si cambias una regla de negocio (ej. "usuario debe ser mayor de edad"), tocas `domain`.
+> - Si agregas un nuevo endpoint, tocas `infrastructure` (controller).
+
+---
+
+## 🧠 Decisiones de Diseño (ADRs)
+
+> **📝 Instrucción**: Documenta aquí las decisiones técnicas importantes que hayas tomado.
+
+### ADR-001: Uso de Spring AI MCP
+- **Contexto**: Necesitábamos una forma estándar de exponer herramientas a LLMs.
+- **Decisión**: Usar Spring AI por su integración nativa con el ecosistema Java del banco.
+- **Consecuencias**: Facilita la inyección de dependencias y configuración.
+
+---
+
+## 🔄 Flujo de Datos
+
+1. **Request**: El usuario pide "Consultar saldo" en Claude.
+2. **Controller**: `McpController` recibe la petición.
+3. **Uses Case**: `GetBalanceUseCase` ejecuta la lógica.
+4. **Repository**: `AccountRepository` consulta la BD.
+5. **Response**: Se devuelve el texto a Claude.

@@ -1,0 +1,54 @@
+# Seguridad
+
+> **⚠️ Importante**: La seguridad es crítica. No expongas credenciales en el código ni en esta documentación.
+
+## 🔐 Autenticación
+
+El servidor utiliza los siguientes mecanismos para verificar la identidad de quien llama:
+
+- **Tipo**: (Ej. OAuth2, Basic Auth, API Key, o "Ninguna para desarrollo local")
+- **Configuración**: Describe dónde se configuran las credenciales (ej. `application.yml` o variables de entorno).
+
+> **📝 Instrucción**: Explica cómo un usuario debe configurar su cliente (Claude/Cursor) para conectarse de forma segura.
+
+### Variables de Entorno Requeridas
+
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `MCP_API_KEY` | Llave maestra para acceso | `sk-12345...` |
+| `DB_PASSWORD` | Contraseña de base de datos | `********` |
+
+---
+
+## 🛡️ Autorización (Roles y Permisos)
+
+¿Quién puede hacer qué?
+
+- **ADMIN**: Acceso total a todas las herramientas.
+- **USER**: Acceso solo a consultas (lectura).
+
+> **📝 Para Dummies**:
+> - Si usas `@PreAuthorize("hasRole('ADMIN')")` en tu código, ponlo aquí.
+> - Si no tienes roles, indica claramente: "Actualmente todos los usuarios tienen acceso completo".
+
+---
+
+## 🔒 Manejo de Datos Sensibles
+
+Reglas para el manejo de información (PII, financiera, etc.):
+
+1. **Logs**: Nunca loguear números de tarjetas o contraseñas.
+2. **Tránsito**: Usar siempre HTTPS en producción.
+3. **Almacenamiento**: Las contraseñas se guardan hasheadas (bcrypt).
+
+---
+
+## 审计 (Auditoría)
+
+El sistema registra las siguientes acciones importantes:
+
+- [x] Inicio de sesión
+- [x] Ejecución de herramientas críticas (ej. transferencias)
+- [ ] Consultas de solo lectura (Opcional)
+
+Los logs de auditoría se envían a: `Console` / `Elasticsearch` / `Archivo`.

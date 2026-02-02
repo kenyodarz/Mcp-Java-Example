@@ -2,90 +2,48 @@
 
 Bienvenido a la documentación técnica de **{{PROJECT_NAME}}**.
 
-## 🎯 ¿Qué es?
+## 🎯 ¿Qué es esto?
+
+> **📝 Instrucción**: Reemplaza este texto con una descripción de una sola frase (Elevator Pitch).
+>
+> Ejemplo: _"Este servidor MCP permite a Claude consultar el saldo de cuentas de ahorros en tiempo real."_
 
 {{DESCRIPTION}}
 
-**Características principales**:
+---
 
-- **🔧 {{TOOLS_COUNT}} Tools MCP**: Herramientas disponibles
-- **🏛️ Clean Architecture**: Separación clara de responsabilidades
-- **⚡ {{FRAMEWORK}}**: Framework moderno
-- **🔐 Seguridad**: Autenticación y autorización
+## ✨ Características Principales
+
+- **🔧 Tools Disponibles**: {{TOOLS_COUNT}} herramientas listas para usar.
+- **⚡ Tecnología**: Construido sobre {{FRAMEWORK}} para máxima velocidad.
+- **🔐 Seguro**: Integrado con los estándares de seguridad del banco.
 
 ---
 
-## 🎯 Importancia
+## 🚀 ¿Por qué usar este servidor?
 
-### ¿Por qué es Crítico?
-
-**Beneficios organizacionales**:
-
-- **🚀 Eficiencia**: Automatización de procesos
-- **🔄 Consistencia**: Datos estandarizados
-- **📈 Escalabilidad**: Arquitectura preparada para crecer
-- **🛡️ Seguridad**: Acceso controlado
+1. **Eficiencia**: Evita tener que buscar manualmente en [Sistema X].
+2. **Estandarización**: Asegura que todos usen los mismos datos.
+3. **Facilidad**: Conéctalo a Claude Desktop y empieza a preguntar en lenguaje natural.
 
 ---
 
-## 🏗️ Arquitectura
+## 🗺️ Mapa de la Documentación
 
-```
-┌─────────────────────────────────────────────────────┐
-│           Cliente MCP (Claude, Cursor, etc.)        │
-└──────────────────┬──────────────────────────────────┘
-                   │ HTTP/SSE
-                   ▼
-┌─────────────────────────────────────────────────────┐
-│              MCP Server ({{FRAMEWORK}})             │
-│  ┌───────────────────────────────────────────────┐  │
-│  │         Entry Point: /mcp                    │  │
-│  └───────────────────────────────────────────────┘  │
-│                                                      │
-│  ┌─────────────────────────────────────────────┐   │
-│  │              Tools                           │   │
-│  └─────────────────────────────────────────────┘   │
-│                          │                           │
-│                          ▼                           │
-│              ┌───────────────────────┐               │
-│              │   Domain Use Cases    │               │
-│              └───────────────────────┘               │
-└─────────────────────────────────────────────────────┘
-```
+- **[Primeros Pasos](getting-started.md)**: 🏁 Configura todo en 5 minutos.
+- **[Referencia de API](api-reference.md)**: 📖 Lista detallada de tools y prompts.
+- **[Arquitectura](architecture.md)**: 🏗️ Entiende cómo funciona por dentro.
+- **[Seguridad](security.md)**: 🔒 Roles, permisos y manejo de datos.
+- **[Solución de Problemas](troubleshooting.md)**: 🆘 ¿Algo falló? Mira aquí.
 
 ---
 
-## 🚀 Quick Start
-
-1. **[Instalación y Setup](getting-started.md)**: Configura el servidor localmente
-2. **[API Reference](api-reference.md)**: Conoce las herramientas disponibles
-3. **[Architecture](architecture.md)**: Entiende la arquitectura
-
----
-
-## 🔧 Tools Disponibles
-
-*Documenta aquí tus tools MCP*
-
----
-
-## 🤝 Contribución
+## 🤝 Soporte
 
 Este proyecto es mantenido por el equipo **{{TEAM}}**.
 
----
-
-## 📞 Soporte
-
-- **Azure DevOps**: [Repositorio](#)
-- **Pipeline**: [Build](#)
-- **Equipo**: {{TEAM}}
-
----
-
-**💡 Tip**: La documentación vive junto al código. Cualquier cambio debe incluir actualización de docs.
-
-Para más detalles:
-- [Getting Started](getting-started.md)
-- [Architecture](architecture.md)
-- [API Reference](api-reference.md)
+| Canal | Link |
+|-------|------|
+| **Código Fuente** | [Repositorio]({{REPO_URL}}) |
+| **Chat del Equipo** | [Teams/Slack](#) |
+| **Reportar Bug** | [Issues]({{REPO_URL}}/issues) |

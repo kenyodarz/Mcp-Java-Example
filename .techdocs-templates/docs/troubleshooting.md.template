@@ -1,0 +1,47 @@
+# Solución de Problemas (Troubleshooting)
+
+Esta guía te ayudará a resolver los problemas más comunes al usar o desarrollar **{{PROJECT_NAME}}**.
+
+## ❓ Problemas Frecuentes (FAQ)
+
+### 1. El servidor no inicia
+**Síntoma**: Error `Connection refused` o la aplicación se cierra inmediatamente.
+**Posible Causa**: Puerto 8080 ocupado.
+**Solución**:
+- Verifica qué proceso usa el puerto: `netstat -ano | findstr :8080`
+- Cambia el puerto en `application.yml` o usa `SERVER_PORT=8081`.
+
+### 2. Claude Desktop no conecta
+**Síntoma**: Círculo rojo 🔴 en Claude Desktop "Disconnected".
+**Solución**:
+- Revisa que la ruta al ejecutable `java` sea absoluta en tu configuración de Claude.
+- Asegúrate de haber hecho el build: `./gradlew build`.
+- Revisa los logs de Claude: `%APPDATA%\Claude\logs`.
+
+### 3. Error "Tool not found"
+**Síntoma**: El modelo dice que no tiene la herramienta.
+**Solución**:
+- Reinicia el servidor MCP (botón "Retry" en Claude).
+- Verifica que la herramienta esté listada en `http://localhost:8080/mcp/list_tools` (si tienes habilitado el endpoint de debug).
+
+---
+
+## 🛠️ Cómo Debuggear
+
+> **📝 Instrucción**: Explica cómo un desarrollador puede ver qué está pasando "por dentro".
+
+1. **Logs**: Revisa la consola donde corres el servidor. Busca excepciones `ERROR` o `WARN`.
+2. **Breakpoints**: Puedes conectar tu IDE al proceso remoto usando:
+   ```bash
+   java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -jar app.jar
+   ```
+
+---
+
+## 🆘 Dónde pedir ayuda
+
+Si nada de esto funciona:
+
+1. Revisa los [Issues en Azure DevOps](#).
+2. Contacta al equipo **{{TEAM}}** en Teams/Slack.
+3. Consulta la [documentación oficial de MCP](https://modelcontextprotocol.io).
