@@ -27,7 +27,7 @@ public class SimpsonsCharacterResponse {
     private String name;
     private String occupation;
     private List<String> phrases;
-    @JsonProperty("portraitPath")
+    @JsonProperty("portrait_path")
     private String portraitPath;
     private String status;
     @JsonProperty("first_appearance_ep")

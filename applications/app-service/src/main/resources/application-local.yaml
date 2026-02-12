@@ -1,0 +1,8 @@
+security:
+  headers:
+    content-security-policy: "default-src 'self'; img-src 'self' data:;"
+    strict-transport-security: "max-age=31536000; includeSubDomains;"
+    x-content-type-options: "nosniff"
+    cache-control: "no-cache"
+    pragma: "no-cache"
+    referrer-policy: "strict-origin-when-cross-origin"
