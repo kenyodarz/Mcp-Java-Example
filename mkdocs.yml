@@ -1,6 +1,5 @@
-site_name: 'Bancolombia MCP Server'
-site_description: 'Servidor MCP reactivo basado en Java, Spring AI y Clean Architecture'
-
+site_name: Bancolombia MCP Server
+site_description: Servidor MCP reactivo basado en Java, Spring AI y Clean Architecture
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
@@ -8,12 +7,10 @@ nav:
   - API Reference: api-reference.md
   - Security: security.md
   - Troubleshooting: troubleshooting.md
-
-plugins:
-  - techdocs-core
-
 theme:
   name: material
   palette:
-    primary: 'blue'
-    accent: 'blue'
+    primary: blue
+    accent: blue
+plugins:
+  - techdocs-core

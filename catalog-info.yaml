@@ -21,11 +21,11 @@ metadata:
     # ============================================
     # GitHub Annotations (CRÍTICAS para TechDocs)
     # ============================================
-    github.com/project-slug: 'kenyodarz/Mcp-Java-Example'
-    backstage.io/source-location: 'https://github.com/kenyodarz/Mcp-Java-Example/tree/main/'
+    #    github.com/project-slug: 'kenyodarz/Mcp-Java-Example'
+    #    backstage.io/source-location: 'https://github.com/kenyodarz/Mcp-Java-Example/tree/main/'
 
     # Build type - indica que usa GitHub Actions
-    kaizen.bancolombia.com/build-type: 'githubactions'
+    #    kaizen.bancolombia.com/build-type: 'githubactions'
 
     # ============================================
     # TechDocs Configuration
@@ -51,6 +51,8 @@ metadata:
     architecture.bancolombia.com/pattern: 'clean-architecture'
     architecture.bancolombia.com/language: 'java'
     architecture.bancolombia.com/framework: 'spring-ai-mcp'
+
+    mcp-catalog/domain: 'simpsons'
 
   links:
     - url: 'https://github.com/kenyodarz/Mcp-Java-Example'
@@ -101,6 +103,8 @@ spec:
   lifecycle: production
   owner: group:default/exodia
   system: inteligencia-artificial
+  domain: Prueba Local
+  path: 'bancolombia/test/local'
 
   definition: |
     # Bancolombia MCP Tools
