@@ -1,6 +1,6 @@
 package co.com.bancolombia.mcp.resources;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.modelcontextprotocol.spec.McpSchema.ResourceContents;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import org.junit.jupiter.api.DisplayName;
@@ -10,7 +10,7 @@ import reactor.test.StepVerifier;
 @DisplayName("SystemInfoResource Unit Tests")
 class SystemInfoResourceTest {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final JsonMapper mapper = JsonMapper.builder().build();
     private final SystemInfoResource resource = new SystemInfoResource(mapper);
 
     @Test

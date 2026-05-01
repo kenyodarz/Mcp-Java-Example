@@ -1,6 +1,6 @@
 package co.com.bancolombia.mcp.resources;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import java.util.List;
@@ -22,9 +22,9 @@ import reactor.core.publisher.Mono;
 @Component
 public class SystemInfoResource {
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
-    public SystemInfoResource(ObjectMapper objectMapper) {
+    public SystemInfoResource(JsonMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

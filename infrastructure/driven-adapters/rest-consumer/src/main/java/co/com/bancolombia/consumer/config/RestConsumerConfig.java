@@ -6,12 +6,14 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import co.com.bancolombia.consumer.config.properties.RestConsumerProperties;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.reactive.ClientHttpConnector;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.Builder;
 import reactor.netty.http.client.HttpClient;
 
 @Configuration
@@ -24,7 +26,8 @@ public class RestConsumerConfig {
     }
 
     @Bean
-    public WebClient getWebClient(WebClient.Builder builder) {
+    public WebClient getWebClient(ObjectProvider<Builder> builderProvider) {
+        WebClient.Builder builder = builderProvider.getIfAvailable(WebClient::builder);
         return builder
                 .baseUrl(properties.getUrl())
                 .defaultHeaders(this::applyDefaultHeaders)

@@ -2,7 +2,7 @@ package co.com.bancolombia.mcp.resources;
 
 import co.com.bancolombia.model.userinfo.UserInfo;
 import co.com.bancolombia.usecase.GetUserInfoUseCase;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import java.util.List;
@@ -28,10 +28,10 @@ import reactor.core.publisher.Mono;
 @Component
 public class UserInfoResource {
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
     private final GetUserInfoUseCase getUserInfoUseCase;
 
-    public UserInfoResource(ObjectMapper objectMapper, GetUserInfoUseCase getUserInfoUseCase) {
+    public UserInfoResource(JsonMapper objectMapper, GetUserInfoUseCase getUserInfoUseCase) {
         this.objectMapper = objectMapper;
         this.getUserInfoUseCase = getUserInfoUseCase;
     }

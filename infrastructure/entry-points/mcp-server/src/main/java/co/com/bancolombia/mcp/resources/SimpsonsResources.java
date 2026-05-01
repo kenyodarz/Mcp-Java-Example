@@ -1,7 +1,7 @@
 package co.com.bancolombia.mcp.resources;
 
 import co.com.bancolombia.model.simpsons.gateways.SimpsonsGateway;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import java.util.List;
@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 public class SimpsonsResources {
 
     private final SimpsonsGateway simpsonsGateway;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     @McpResource(uri = "simpsons://character/{id}", name = "simpsons-character", description = "Recurso que representa un personaje de Los Simpsons")
     @PreAuthorize("hasAnyRole('MCP.RESOURCE.SIMPSONS', 'MCP.ADMIN')")

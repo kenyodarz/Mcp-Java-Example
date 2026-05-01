@@ -4,7 +4,7 @@ import co.com.bancolombia.model.userinfo.UserInfo;
 import co.com.bancolombia.usecase.GetUserInfoUseCase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.modelcontextprotocol.spec.McpSchema.ResourceContents;
 import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import java.util.List;
@@ -16,7 +16,7 @@ import reactor.test.StepVerifier;
 
 class UserInfoResourceTest {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final JsonMapper mapper = JsonMapper.builder().build();
     private final GetUserInfoUseCase useCase = Mockito.mock(GetUserInfoUseCase.class);
     private final UserInfoResource resource =
             new UserInfoResource(mapper, useCase);
