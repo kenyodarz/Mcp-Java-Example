@@ -176,3 +176,11 @@ Execute this initialization process and report:
 3. ✓ agent-api-to-mcp-workflow.md comprehended and ready for Phase 1
 4. Ready for Step 3 (user provides API contracts)
 
+---
+
+## References
+
+- 📘 [Playbook Detallado](../SDD/playbook-mcp-refactor.md)
+- 🤖 [Prompt para Agentes](../SDD/prompt-disparador-mcp.md)
+- 📖 [Framework SDD](https://github.com/kenyodarz/bancolombia-api-sdd-framework-export)
+

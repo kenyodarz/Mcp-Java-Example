@@ -2,13 +2,12 @@
 
 ## 🎯 Resumen Ejecutivo
 
-Se han creado y mejorado significativamente **3 archivos clave** basados en el análisis completo del
+Se han creado y mejorado significativamente **archivos clave** basados en el análisis completo del
 framework SDD de Bancolombia:
 
 ### Archivos Creados/Modificados
 
-1. **`init-bancolombia-sdd.md`** (NUEVO)
-    - Ubicación: raíz del proyecto (`/init-bancolombia-sdd.md`)
+1. **`docs/setup/init-bancolombia-sdd.md`** (NUEVO)
     - Propósito: Instrucciones paso a paso para inyectar el framework SDD
     - Basado en: Gist oficial https://gist.github.com/kenyodarz/e100df94e7567910c7dfc64b8381016d
     - Características:
@@ -16,41 +15,26 @@ framework SDD de Bancolombia:
         - Fail-Fast si falta cualquier archivo requerido
         - Limpieza automática de directorios temporales
 
-2. **`docs/playbook-mcp-refactor.md`** (MEJORADO SIGNIFICATIVAMENTE)
-    - Ubicación: `/docs/playbook-mcp-refactor.md`
+2. **`docs/SDD/playbook-mcp-refactor.md`** (MEJORADO SIGNIFICATIVAMENTE)
     - Propósito: Guía detallada para validar y refactorizar un MCP ya implementado
     - Mejoras principales:
-        - **Referencia directa al SDD Framework
-          **: https://github.com/kenyodarz/bancolombia-api-sdd-framework-export
-        - **9 secciones estructuradas**:
-            1. Inyección y Validación del Framework SDD
-            2. Comprensión Obligatoria del Playbook
-            3. Validación de Tools MCP (Iterativa)
-            4. Seguridad: Política Fail-Closed
-            5. Configuración: Cero Hardcoding
-            6. Limpieza: Remover Placeholders
-            7. Validación de Convenciones del Workflow
-            8. Fases de Implementación Esperadas
-            9. Reporte Final Requerido
-        - **Comandos de validación** (grep, find) para verificar cumplimiento
-        - **Examples de código correcto e incorrecto**
-        - **Matriz de verificación** (checkboxes) para cada paso
-        - **5 Fases del Workflow SDD** explicadas detalladamente
+        - Referencia directa al SDD
+          Framework: https://github.com/kenyodarz/bancolombia-api-sdd-framework-export
+        - 9 secciones estructuradas
+        - Comandos grep/find listos para copiar-pegar
+        - Ejemplos de código correcto/incorrecto
+        - Matriz de verificación paso a paso
+        - 5 Fases del Workflow SDD integradas
 
-3. **`docs/prompt-disparador-mcp.md`** (COMPLETAMENTE REESCRITO)
-    - Ubicación: `/docs/prompt-disparador-mcp.md`
+3. **`docs/SDD/prompt-disparador-mcp.md`** (COMPLETAMENTE REESCRITO)
     - Propósito: Prompt directo y ejecutable para agentes/LLMs
     - Características:
-        - **14 pasos secuenciales** (NO paralelos)
-        - **Reglas globales no negociables**
-        - **Validaciones automáticas**:
-            - `./gradlew clean build`: 0 errores
-            - `./gradlew test`: 100% en verde
-            - Security: Fail-closed validation
-            - Zero-hardcoding verification
-        - **Búsquedas grep** templátizadas
-        - **Reportes de salida estructurados**
-        - **Alineación total con agent-api-to-mcp-workflow.md**
+        - 14 pasos secuenciales (NO paralelos)
+        - Referencia explícita y clara a init-bancolombia-sdd.md
+        - Validaciones automáticas
+        - Búsquedas grep templátizadas
+        - Reportes de salida estructurados
+        - Alineación total con agent-api-to-mcp-workflow.md
 
 ---
 
@@ -116,33 +100,26 @@ External API
 
 ### Para un Desarrollador
 
-1. **Leer primero**: `init-bancolombia-sdd.md`
-    - Entiende cómo se inyecta el SDD Framework
+1. **Leer primero**: `docs/guides/COMIENZA-AQUI.md`
+    - Entiende el flujo general
 
-2. **Entender la guía**: `docs/playbook-mcp-refactor.md`
+2. **Inyectar SDD**: `docs/setup/init-bancolombia-sdd.md`
+    - Sigue los Steps 1.0 - 1.5
+
+3. **Entender la guía**: `docs/SDD/playbook-mcp-refactor.md`
     - Lee las 9 secciones en orden
     - Ejecuta los comandos de validación
 
-3. **Usar como referencia**: `docs/prompt-disparador-mcp.md`
+4. **Usar como referencia**: `docs/SDD/prompt-disparador-mcp.md`
     - Para validaciones automáticas
     - Para generar reportes
 
 ### Para un Agente de IA / LLM
 
-1. **Copiar el contenido de `docs/prompt-disparador-mcp.md`**
+1. **Copiar el contenido de `docs/SDD/prompt-disparador-mcp.md`**
 2. **Pegar directamente en el contexto del agente/LLM**
 3. **El agente ejecutará secuencialmente los 14 pasos**
 4. **Obtendrá reporte final estructurado**
-
-Ejemplo:
-
-```bash
-# Copiar prompt
-cat docs/prompt-disparador-mcp.md | pbcopy
-
-# Pegar en ChatGPT / LLM Agent
-# El agente ahora tiene contexto completo del SDD + workflow
-```
 
 ---
 
@@ -155,6 +132,7 @@ cat docs/prompt-disparador-mcp.md | pbcopy
 - ❌ Sin comandos de validación específicos
 - ❌ Sin ejemplos de código correcto/incorrecto
 - ❌ Sin matriz de verificación
+- ❌ Archivo init-SDD no referenciado en prompts
 
 ### Ahora (Versión Mejorada)
 
@@ -167,19 +145,20 @@ cat docs/prompt-disparador-mcp.md | pbcopy
 - ✅ Reglas no negociables explícitas
 - ✅ Resporte final estructurado
 - ✅ Referencias a archivos reales en el proyecto
+- ✅ init-bancolombia-sdd.md llamado explícitamente en Paso 1
 
 ---
 
 ## 📋 Resumen de Contenidos
 
-### `init-bancolombia-sdd.md` (170 líneas)
+### `docs/setup/init-bancolombia-sdd.md` (183 líneas)
 
 - Step 1.0 - 1.5: Inyección y validación
 - Step 2: Comprensión del playbook
 - Step 3: Ejecución de toolification
 - Reglas globales de enforcement
 
-### `docs/playbook-mcp-refactor.md` (230+ líneas)
+### `docs/SDD/playbook-mcp-refactor.md` (230+ líneas)
 
 -
     1. Inyección y validación del SDD
@@ -200,7 +179,7 @@ cat docs/prompt-disparador-mcp.md | pbcopy
 -
     9. Reporte final requerido
 
-### `docs/prompt-disparador-mcp.md` (200+ líneas en formato bloque de código)
+### `docs/SDD/prompt-disparador-mcp.md` (150+ líneas)
 
 - 14 pasos secuenciales
 - Reglas globales no negociables
@@ -212,7 +191,7 @@ cat docs/prompt-disparador-mcp.md | pbcopy
 
 ## 🔗 Referencias Clave Incorporadas
 
-En los 3 archivos se incorporaron referencias directas a:
+En los archivos se incorporaron referencias directas a:
 
 1. **Framework SDD**: https://github.com/kenyodarz/bancolombia-api-sdd-framework-export
 2. **Agent-API-to-MCP Workflow**: Directrices de 5 fases
@@ -237,20 +216,21 @@ El contenido fue validado contra:
 
 ## 🚀 Próximos Pasos (Para ti)
 
-1. Revisar los 3 archivos creados
+1. Revisar los archivos en su nueva ubicación
 2. Validar que la información refleja correctamente tu SDD
-3. Copiar el contenido de `prompt-disparador-mcp.md` para usar con agentes
-4. Usar `playbook-mcp-refactor.md` como guía de validación manual
-5. Compartir estos archivos con tu equipo de desarrollo
+3. Compartir con tu equipo de desarrollo
+4. Ejecutar la inyección del SDD seguindo `docs/setup/init-bancolombia-sdd.md`
+5. Validar/Refactorizar MCP usando `docs/SDD/playbook-mcp-refactor.md` o
+   `docs/SDD/prompt-disparador-mcp.md`
 
 ---
 
 ## 📞 Notas Importantes
 
 - Los archivos están **listos para ser compartidos** con desarrolladores
-- El prompt en `docs/prompt-disparador-mcp.md` puede **copiar-pegarse directamente** en LLMs
-- La **inyección del SDD es crítica y fail-fast** según `init-bancolombia-sdd.md`
-- **NO hay content de ejemplo** en los archivos, todo es reutilizable
+- El prompt en `docs/SDD/prompt-disparador-mcp.md` puede **copia-pegarse directamente** en LLMs
+- La **inyección del SDD es crítica y fail-fast** según `docs/setup/init-bancolombia-sdd.md`
+- **NO hay contenido de ejemplo** en los archivos, todo es reutilizable
 
 ---
 
