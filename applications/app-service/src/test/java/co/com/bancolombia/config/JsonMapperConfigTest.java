@@ -8,12 +8,12 @@ import org.reactivecommons.utils.ObjectMapper;
 import org.reactivecommons.utils.ObjectMapperImp;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-class ObjectMapperConfigTest {
+class JsonMapperConfigTest {
 
     @Test
-    void testObjectMapperBean() {
+    void testJsonMapperBean() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-                ObjectMapperConfig.class);
+                JsonMapperConfig.class);
         ObjectMapper objectMapper = context.getBean(ObjectMapper.class);
         assertNotNull(objectMapper);
         assertTrue(objectMapper instanceof ObjectMapperImp);
