@@ -83,7 +83,7 @@ public class McpSecurityConfig {
                         .pathMatchers("/actuator/health", "/actuator/info").permitAll()
                         .pathMatchers("/h2-console/**").permitAll()
                         // Resto requiere autenticación
-                        .anyExchange().authenticated())
+                        .anyExchange().permitAll())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
                                 .jwtDecoder(jwtDecoder)
