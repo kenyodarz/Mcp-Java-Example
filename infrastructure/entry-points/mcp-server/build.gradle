@@ -20,8 +20,8 @@ dependencies {
     // Validación
     implementation "org.springframework.boot:spring-boot-starter-validation"
 
-    // AOP
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    // AOP for Audit (renombrado spring-boot-starter-aop → spring-boot-starter-aspectj en Spring Boot 4.x)
+    implementation 'org.springframework.boot:spring-boot-starter-aspectj'
 
     // Seguridad
     implementation 'org.springaicommunity:mcp-server-security:0.0.4'

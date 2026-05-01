@@ -84,7 +84,7 @@ continuing**.
 * `skills/api-design/SKILL.md`
 * `skills/spec-intake/SKILL.md`
 * `skills/traceability/SKILL.md`
-* `AGENT.md`
+* `AGENTS.md`
 
 ### Required Directories
 

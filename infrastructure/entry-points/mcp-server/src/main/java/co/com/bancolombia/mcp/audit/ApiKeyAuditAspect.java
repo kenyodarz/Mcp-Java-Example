@@ -34,7 +34,7 @@ public class ApiKeyAuditAspect {
     /**
      * Audita todas las llamadas a Tools MCP
      */
-    @Around("@annotation(org.springaicommunity.mcp.annotation.McpTool)")
+    @Around("@annotation(org.springframework.ai.mcp.annotation.McpTool)")
     public Object auditToolCall(ProceedingJoinPoint joinPoint) throws Throwable {
         return auditMcpCall(joinPoint, "TOOL");
     }
@@ -42,7 +42,7 @@ public class ApiKeyAuditAspect {
     /**
      * Audita todas las llamadas a Resources MCP
      */
-    @Around("@annotation(org.springaicommunity.mcp.annotation.McpResource)")
+    @Around("@annotation(org.springframework.ai.mcp.annotation.McpResource)")
     public Object auditResourceCall(ProceedingJoinPoint joinPoint) throws Throwable {
         return auditMcpCall(joinPoint, "RESOURCE");
     }
@@ -50,7 +50,7 @@ public class ApiKeyAuditAspect {
     /**
      * Audita todas las llamadas a Prompts MCP
      */
-    @Around("@annotation(org.springaicommunity.mcp.annotation.McpPrompt)")
+    @Around("@annotation(org.springframework.ai.mcp.annotation.McpPrompt)")
     public Object auditPromptCall(ProceedingJoinPoint joinPoint) throws Throwable {
         return auditMcpCall(joinPoint, "PROMPT");
     }

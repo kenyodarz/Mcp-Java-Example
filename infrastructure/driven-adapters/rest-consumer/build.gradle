@@ -2,7 +2,8 @@ dependencies {
     implementation project(':model')
     implementation 'org.springframework:spring-context'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
-    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    // AOP (renombrado spring-boot-starter-aop → spring-boot-starter-aspectj en Spring Boot 4.x)
+    implementation 'org.springframework.boot:spring-boot-starter-aspectj'
     implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.3.0'
     implementation 'io.github.resilience4j:resilience4j-reactor:2.3.0'
     implementation 'io.micrometer:micrometer-core'

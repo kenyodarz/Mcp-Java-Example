@@ -56,8 +56,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: "https://login.microsoftonline.com/428f4e2e-13bf-4884-b364-02ef9af41a1d/v2.0"
-          client-id: "60a5e8d0-c8cd-4c5d-a94c-b4312f58f55f"
+          issuer-uri: "${AZURE_ISSUER_URI:https://login.microsoftonline.com/428f4e2e-13bf-4884-b364-02ef9af41a1d/v2.0}"
+          client-id: "${AZURE_CLIENT_ID:60a5e8d0-c8cd-4c5d-a94c-b4312f58f55f}"
     headers:
       content-security-policy: "${CONTENT_SECURITY_POLICY}"
       strict-transport-security: "${STRICT_TRANSPORT_SECURITY}"
@@ -95,7 +95,7 @@ logging:
 adapter:
   restconsumer:
     timeout: 5000
-    url: "https://thesimpsonsapi.com/api"
+    url: "${SIMPSONS_API_URL:https://thesimpsonsapi.com/api}"
     headers:
       Accept: "application/json"
       Content-Type: "application/json"

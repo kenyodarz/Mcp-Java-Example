@@ -6,6 +6,17 @@ convenciones del workflow "agent-api-to-mcp-workflow" del framework SDD de Banco
 
 **Repository**: https://github.com/kenyodarz/bancolombia-api-sdd-framework-export
 
+## Stack Tecnológico
+
+| Componente                                | Versión  |
+|-------------------------------------------|----------|
+| Java                                      | 25       |
+| Spring Boot                               | 4.x      |
+| Jackson                                   | 3        |
+| Spring AI                                 | 2.0.0 M4 |
+| Gradle                                    | 9.5.0    |
+| Bancolombia Clean Architecture Scaffolder | 4.4.1    |
+
 ---
 
 ## 1. Inyección y Validación del Framework SDD (CRÍTICO)

@@ -25,6 +25,8 @@ subprojects {
 
     test {
         useJUnitPlatform()
+        // No fallar si un módulo tiene clases de test pero sin métodos @Test
+        failOnNoDiscoveredTests = false
     }
 
     dependencies {

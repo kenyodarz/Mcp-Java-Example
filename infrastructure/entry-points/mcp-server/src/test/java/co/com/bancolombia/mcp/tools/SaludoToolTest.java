@@ -1,5 +1,6 @@
 package co.com.bancolombia.mcp.tools;
 
+import co.com.bancolombia.usecase.SaludoUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -7,7 +8,7 @@ import reactor.test.StepVerifier;
 @DisplayName("SaludoTool Unit Tests")
 class SaludoToolTest {
 
-    private final SaludoTool tool = new SaludoTool();
+    private final SaludoTool tool = new SaludoTool(new SaludoUseCase());
 
     @Test
     @DisplayName("Debe retornar un saludo personalizado cuando el nombre es válido")

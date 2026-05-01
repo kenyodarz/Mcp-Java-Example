@@ -1,8 +1,14 @@
 # Prompt Disparador para Validación y Refactorización MCP (SDD Bancolombia)
 
 ```
-Actúa como un Desarrollador Senior y Arquitecto de Integración especializado en Java 25+, 
-Spring Boot 4.x, Clean Architecture, Model Context Protocol (MCP) y el framework SDD de Bancolombia.
+Actúa como un Desarrollador Senior y Arquitecto de Integración especializado en:
+- Java 25
+- Spring Boot 4.x
+- Jackson 3
+- Spring AI 2.0.0 M4
+- Gradle 9.5.0
+- Bancolombia Clean Architecture Scaffolder v4.4.1
+- Model Context Protocol (MCP) y el framework SDD de Bancolombia
 
 OBJETIVO PRINCIPAL
 ==================
@@ -16,7 +22,7 @@ PASOS SECUENCIALES (NO PARALELOS)
 ==================================
 
 1. INYECCIÓN Y VALIDACIÓN DEL FRAMEWORK SDD (CRÍTICO - FAIL-FAST)
-   - Lee primero: ../../init-bancolombia-sdd.md (en la raíz del proyecto)
+   - Lee primero el archivo: docs/setup/init-bancolombia-sdd.md (en la carpeta docs/setup/ del proyecto)
    - Sigue los pasos Step 1.0 - 1.5 para inyectar el framework SDD
    - Valida la existencia de TODOS estos archivos:
      ✓ docs/playbooks/agent-api-to-mcp-workflow.md
@@ -123,7 +129,7 @@ PASOS SECUENCIALES (NO PARALELOS)
 
 REGLAS GLOBALES (NO NEGOCIABLES)
 =================================
-- PASO 1 CRÍTICO: Lee y ejecuta ../../init-bancolombia-sdd.md antes de continuar
+- PASO 1 CRÍTICO: Lee y ejecuta docs/setup/init-bancolombia-sdd.md antes de continuar
 - NO paralelos: ejecuta fases secuencialmente
 - NO excepciones: sigue agent-api-to-mcp-workflow.md al pie de la letra
 - NO hardcoding: todas las URLs en application.yaml
@@ -142,6 +148,6 @@ REPORTA CUALQUIER DESVIACIÓN O HALLAZGO CRÍTICO IMMEDIATELY.
 ## 📝 Referencia Rápida
 
 - **Playbook Detallado**: [playbook-mcp-refactor.md](./playbook-mcp-refactor.md)
-- **Inyección SDD**: [../../init-bancolombia-sdd.md](../../init-bancolombia-sdd.md)
+- **Inyección SDD**: [docs/setup/init-bancolombia-sdd.md](../setup/init-bancolombia-sdd.md)
 - **Framework SDD**: https://github.com/kenyodarz/bancolombia-api-sdd-framework-export
 

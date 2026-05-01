@@ -8,7 +8,7 @@ import io.modelcontextprotocol.spec.McpSchema.TextResourceContents;
 import java.util.List;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springaicommunity.mcp.annotation.McpResource;
+import org.springframework.ai.mcp.annotation.McpResource;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
