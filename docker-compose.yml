@@ -26,7 +26,8 @@ services:
       - STATE_DIR=/tmp/ministack
     volumes:
       - ministack-data:/tmp/ministack
-      - ./docker/init-secrets.sh:/docker-entrypoint-initaws.d/init-secrets.sh
+      # DEPRECATED: Automatización shell removida. Ver: docs/guides/manual-secrets-setup.md
+      # - ./docker/init-secrets.sh:/docker-entrypoint-initaws.d/init-secrets.sh
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4566/_ministack/health')" ]
       interval: 10s

@@ -32,12 +32,15 @@ Puntos confirmados desde la documentación:
 
 ```text
 /docker-compose.yml
-/docker/init-secrets.sh
+/docker/init-secrets.sh                    (DEPRECADO - ver docs/guides/manual-secrets-setup.md)
 /scripts/ministack-tools.sh
 /applications/app-service/src/main/resources/application.yaml
 /applications/app-service/src/main/resources/application-dev.yaml
 /applications/app-service/src/main/resources/application-prod.yaml
 ```
+
+📖 **Guía de creación manual de secretos**: [
+`docs/guides/manual-secrets-setup.md`](./manual-secrets-setup.md)
 
 ## Quick start
 
@@ -96,16 +99,46 @@ volumes:
   - ministack-data:/tmp/ministack
 ```
 
-## Inicialización automática
+## Inicialización de Secretos
 
-El repo monta `docker/init-secrets.sh` en:
+### ⚠️ DEPRECADO: Inicialización automática
 
-```text
-/docker-entrypoint-initaws.d/init-secrets.sh
+El script `docker/init-secrets.sh` ha sido **deprecado** debido a fallos silenciosos sin logs
+útiles.
+
+**Para crear secretos, siga la guía**: 📖 [
+`docs/guides/manual-secrets-setup.md`](./manual-secrets-setup.md)
+
+### Crear secretos manualmente (recomendado)
+
+Tres opciones disponibles:
+
+#### Opción 1: AWS CLI local
+
+```bash
+export AWS_ENDPOINT=http://localhost:4566
+aws secretsmanager create-secret \
+  --name api-consumer-key \
+  --secret-string "simpsons-api-key-dev-12345" \
+  --endpoint-url "$AWS_ENDPOINT" --region us-east-1
 ```
 
-Ese path está soportado por Ministack por compatibilidad. El script crea los secretos al arrancar el
-contenedor.
+#### Opción 2: Docker Compose
+
+```bash
+docker compose exec -T ministack aws secretsmanager create-secret \
+  --name api-consumer-key \
+  --secret-string "simpsons-api-key-dev-12345" \
+  --endpoint-url "http://localhost:4566" --region us-east-1
+```
+
+#### Opción 3: Script de utilidades
+
+```bash
+./scripts/ministack-tools.sh create-secrets
+```
+
+**Ver guía completa**: 📖 [`docs/guides/manual-secrets-setup.md`](./manual-secrets-setup.md)
 
 ## Troubleshooting
 
