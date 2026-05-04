@@ -1,0 +1,113 @@
+spring:
+  profiles:
+    active: prod
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "${ISSUER_URI}"
+          client-id: "${CLIENT_ID}"
+  h2:
+    console:
+      enabled: false
+  datasource:
+    url: "jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+    driver-class-name: "org.postgresql.Driver"
+    username: "${DB_USERNAME}"
+    password: "${DB_PASSWORD}"
+
+logging:
+  level:
+    root: INFO
+    io.modelcontextprotocol: DEBUG
+    org.springframework.ai.mcp: DEBUG
+    co.com.bancolombia: DEBUG
+    org.springframework.security: INFO
+    org.springframework.r2dbc: INFO
+    org.springframework.data.r2dbc: INFO
+
+# AWS Secrets Manager - Producción (AWS real)
+aws:
+  region: "${AWS_REGION}"
+  secretsmanager:
+    endpoint: ""
+    cache-size: 10
+    cache-seconds: 7200
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,liveness,readiness,circuitbreakers"
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    circuitbreakers:
+      enabled: true
+
+cors:
+  allowed-origin: "${ALLOWED_ORIGIN}"
+
+security:
+  headers:
+    content-security-policy: "${CONTENT_SECURITY_POLICY}"
+    strict-transport-security: "${STRICT_TRANSPORT_SECURITY}"
+    x-content-type-options: "${X_CONTENT_TYPE_OPTIONS}"
+    cache-control: "${CACHE_CONTROL}"
+    pragma: "${PRAGMA}"
+    referrer-policy: "${REFERRER_POLICY}"
+
+jwt:
+  json-exp-roles: "${JWT_JSON_EXP_ROLES}"
+
+adapter:
+  restconsumer:
+    timeout: "${API_TIMEOUT:5000}"
+    url: "${API_BASE_URL}"
+
+adapters:
+  r2dbc:
+    host: "${DB_HOST}"
+    port: "${DB_PORT:5432}"
+    database: "${DB_NAME}"
+    username: "${DB_USERNAME}"
+    password: "${DB_PASSWORD}"
+    schema: public
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 70
+        slowCallDurationThreshold: 3s
+        permittedNumberOfCallsInHalfOpenState: 5
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 15
+        waitDurationInOpenState: 30s
+    instances:
+      simpsonsApi:
+        baseConfig: default
+
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+    instances:
+      simpsonsApi:
+        baseConfig: default
+
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+    instances:
+      simpsonsApi:
+        baseConfig: default
+

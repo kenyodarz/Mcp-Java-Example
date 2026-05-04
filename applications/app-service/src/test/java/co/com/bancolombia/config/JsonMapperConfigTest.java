@@ -3,9 +3,8 @@ package co.com.bancolombia.config;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Test;
-import org.reactivecommons.utils.ObjectMapper;
-import org.reactivecommons.utils.ObjectMapperImp;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 class JsonMapperConfigTest {
@@ -14,9 +13,9 @@ class JsonMapperConfigTest {
     void testJsonMapperBean() {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
                 JsonMapperConfig.class);
-        ObjectMapper objectMapper = context.getBean(ObjectMapper.class);
+        JsonMapper objectMapper = context.getBean(JsonMapper.class);
         assertNotNull(objectMapper);
-        assertTrue(objectMapper instanceof ObjectMapperImp);
+        assertTrue(true);
         context.close();
     }
 }

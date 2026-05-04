@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # Ministack - AWS Services Emulator
+  # https://ministack.org/
+  # https://github.com/ministackorg/ministack
+  # 42+ servicios AWS emulados incluyendo Secrets Manager, RDS, S3, etc.
+  # ============================================
+  ministack:
+    image: ministackorg/ministack:latest
+    container_name: mcp-ministack
+    ports:
+      - "4566:4566"         # Ministack Gateway (AWS API compatible)
+    environment:
+      - GATEWAY_PORT=4566
+      - EDGE_PORT=4566
+      - MINISTACK_REGION=us-east-1
+      - MINISTACK_HOST=localhost
+      - SERVICES=secretsmanager,kms
+      - LOG_LEVEL=info
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - PERSIST_STATE=1
+      - STATE_DIR=/tmp/ministack
+    volumes:
+      - ministack-data:/tmp/ministack
+      - ./docker/init-secrets.sh:/docker-entrypoint-initaws.d/init-secrets.sh
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4566/_ministack/health')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - mcp-network
+
+  # ============================================
+  # PostgreSQL (Opcional - para persistencia BD)
+  # ============================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: mcp-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mcpdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge
+
+volumes:
+  ministack-data:
+    driver: local
+  postgres-data:
+    driver: local
+
+
+

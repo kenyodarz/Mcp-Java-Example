@@ -2,6 +2,7 @@ package co.com.bancolombia.config;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import co.com.bancolombia.model.gateway.AsyncSecretsGateway;
 import co.com.bancolombia.model.simpsons.gateways.SimpsonsGateway;
 import co.com.bancolombia.model.userinfo.gateways.UserInfoGateway;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,11 @@ public class UseCasesConfigTest {
         @Bean
         public UserInfoGateway userInfoGateway() {
             return id -> Mono.empty();
+        }
+
+        @Bean
+        public AsyncSecretsGateway asyncSecretsGateway() {
+            return secretName -> Mono.just("mock-secret-value");
         }
 
         @Bean

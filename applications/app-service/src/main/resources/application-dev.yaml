@@ -1,0 +1,77 @@
+spring:
+  profiles:
+    active: dev
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://login.microsoftonline.com/428f4e2e-13bf-4884-b364-02ef9af41a1d/v2.0"
+          client-id: "5653377e-2976-44ba-9c42-8c60d300ec20"
+  h2:
+    console:
+      enabled: true
+      path: "/h2"
+  datasource:
+    url: "jdbc:h2:mem:testdb;MODE=PostgreSQL"
+    driver-class-name: "org.h2.Driver"
+
+# Database configuration
+logging:
+  level:
+    org.springframework.data.r2dbc: INFO
+    org.springframework.r2dbc: INFO
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    reactor.netty.http.server.HttpServerOperations: INFO
+
+# AWS Secrets Manager - Desarrollo (ministack)
+aws:
+  region: us-east-1
+  secretsmanager:
+    endpoint: http://localhost:4566
+    cache-size: 5
+    cache-seconds: 3600
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  info:
+    environment:
+      enabled: true
+
+cors:
+  allowed-origin: "localhost:3000"
+
+security:
+  headers:
+    content-security-policy: "default-src 'self'; img-src 'self' data:;"
+    strict-transport-security: "max-age=31536000; includeSubDomains;"
+    x-content-type-options: "nosniff"
+    cache-control: "no-cache"
+    pragma: "no-cache"
+    referrer-policy: "strict-origin-when-cross-origin"
+
+jwt:
+  json-exp-roles: "/groups"
+
+adapter:
+  restconsumer:
+    timeout: 30000
+    url: "https://leasing-ws-qa.apps.ambientesbc.lab"
+
+adapters:
+  r2dbc:
+    host: localhost
+    port: 5432
+    database: mcpdb
+    username: postgres
+    password: postgres
+    schema: public
+

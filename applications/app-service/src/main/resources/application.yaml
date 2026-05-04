@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: "mcp-bancolombia"
+  profiles:
+    active: "dev"
 
   devtools:
     add-properties: false
@@ -72,6 +74,15 @@ spring:
 jwt:
   json-exp-roles: "/roles"
 
+# ============================================
+# AWS SECRETS MANAGER
+# ============================================
+aws:
+  region: "${AWS_REGION:us-east-1}"
+  secretsmanager:
+    endpoint: "${AWS_SECRETS_ENDPOINT:}"
+    cache-size: 5
+    cache-seconds: 3600
 
 # ============================================
 # LOGGING
