@@ -2,7 +2,6 @@ apply plugin: 'org.springframework.boot'
 
 dependencies {
     testImplementation 'tools.jackson.core:jackson-databind'
-    implementation project(':r2dbc-postgresql')
     implementation project(':rest-consumer')
     implementation project(':mcp-server')
     implementation project(':model')

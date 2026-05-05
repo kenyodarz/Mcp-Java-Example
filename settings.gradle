@@ -24,7 +24,5 @@ include ':mcp-server'
 project(':mcp-server').projectDir = file('./infrastructure/entry-points/mcp-server')
 include ':rest-consumer'
 project(':rest-consumer').projectDir = file('./infrastructure/driven-adapters/rest-consumer')
-include ':r2dbc-postgresql'
-project(':r2dbc-postgresql').projectDir = file('./infrastructure/driven-adapters/r2dbc-postgresql')
 include ':secrets-manager'
 project(':secrets-manager').projectDir = file('./infrastructure/driven-adapters/secrets-manager-adapter')

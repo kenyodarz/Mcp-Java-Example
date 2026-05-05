@@ -49,8 +49,8 @@ sugerencias de mejora y recomendaciones de arquitectura.
 
 Este servidor sigue el patrón **Clean Architecture de Bancolombia** y está construido con:
 
-- **Lenguaje**: Java 17+
-- **Framework**: Spring Boot 3.x + Spring AI 1.1.0
+- **Lenguaje**: Java 21+
+- **Framework**: Spring Boot 4.x + Spring AI 2.0.0-M5
 - **Protocolo**: MCP (Model Context Protocol) - Stateless HTTP
 - **Stack Reactivo**: Spring WebFlux + Project Reactor
 - **Infraestructura**: AWS (Step Functions, S3, Bedrock)
@@ -63,7 +63,7 @@ Este servidor sigue el patrón **Clean Architecture de Bancolombia** y está con
                    │ HTTP/SSE
                    ▼
 ┌─────────────────────────────────────────────────────┐
-│            MCP Server (Spring AI 1.1.0)             │
+│            MCP Server (Spring AI 2.0.0-M5)          │
 │  ┌───────────────────────────────────────────────┐  │
 │  │  Entry Point: /mcp/stream (STATELESS/ASYNC)  │  │
 │  └───────────────────────────────────────────────┘  │

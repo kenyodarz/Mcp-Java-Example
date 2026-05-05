@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: dev
   security:
     oauth2:
       resourceserver:
@@ -18,8 +16,6 @@ spring:
 # Database configuration
 logging:
   level:
-    org.springframework.data.r2dbc: INFO
-    org.springframework.r2dbc: INFO
     org.springframework.security: INFO
     org.springframework.web: INFO
     reactor.netty.http.server.HttpServerOperations: INFO
@@ -66,12 +62,4 @@ adapter:
     timeout: 30000
     url: "https://leasing-ws-qa.apps.ambientesbc.lab"
 
-adapters:
-  r2dbc:
-    host: localhost
-    port: 5432
-    database: mcpdb
-    username: postgres
-    password: postgres
-    schema: public
 

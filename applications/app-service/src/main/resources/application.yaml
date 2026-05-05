@@ -94,7 +94,6 @@ logging:
     org.springframework.ai.mcp: DEBUG
     co.com.bancolombia: DEBUG
     org.springframework.security: INFO
-    org.springframework.r2dbc: DEBUG
     # Auditoría
     co.com.bancolombia.mcp.audit: INFO
 #  pattern:
@@ -110,14 +109,6 @@ adapter:
     headers:
       Accept: "application/json"
       Content-Type: "application/json"
-adapters:
-  r2dbc:
-    host: localhost
-    port: 5432
-    database: mcpdb
-    username: postgres
-    password: postgres
-    schema: public
 
 # ============================================
 # ACTUATOR Y MÉTRICAS

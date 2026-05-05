@@ -143,7 +143,7 @@ public Mono<AnalysisResult> analyzeRepository(
 
 ## 🛠️ Spring AI Integration
 
-El servidor usa **Spring AI 1.1.0** para implementar el protocolo MCP.
+El servidor usa **Spring AI 2.0.0-M5** para implementar el protocolo MCP.
 
 ### Componentes MCP
 

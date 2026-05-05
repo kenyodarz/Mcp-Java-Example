@@ -1,8 +1,8 @@
-# Integración con Spring AI 1.1.0
+# Integración con Spring AI 2.0.0-M5
 
 ## Descripción
 
-Este proyecto implementa un **servidor MCP (Model Context Protocol)** usando **Spring AI 1.1.0**,
+Este proyecto implementa un **servidor MCP (Model Context Protocol)** usando **Spring AI 2.0.0-M5**,
 proporcionando una arquitectura reactiva con WebFlux para herramientas, recursos y prompts.
 
 ## 🏗️ Arquitectura
@@ -14,7 +14,7 @@ proporcionando una arquitectura reactiva con WebFlux para herramientas, recursos
                    │ HTTP/SSE
                    ▼
 ┌─────────────────────────────────────────────────────┐
-│            MCP Server (Spring AI 1.1.0)             │
+│            MCP Server (Spring AI 2.0.0-M5)          │
 │  ┌───────────────────────────────────────────────┐  │
 │  │  Entry Point: /mcp/stream (STATELESS/ASYNC)  │  │
 │  └───────────────────────────────────────────────┘  │

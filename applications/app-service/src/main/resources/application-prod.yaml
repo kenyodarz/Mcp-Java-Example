@@ -1,6 +1,4 @@
 spring:
-  profiles:
-    active: prod
   security:
     oauth2:
       resourceserver:
@@ -23,8 +21,6 @@ logging:
     org.springframework.ai.mcp: DEBUG
     co.com.bancolombia: DEBUG
     org.springframework.security: INFO
-    org.springframework.r2dbc: INFO
-    org.springframework.data.r2dbc: INFO
 
 # AWS Secrets Manager - Producción (AWS real)
 aws:
@@ -67,14 +63,6 @@ adapter:
     timeout: "${API_TIMEOUT:5000}"
     url: "${API_BASE_URL}"
 
-adapters:
-  r2dbc:
-    host: "${DB_HOST}"
-    port: "${DB_PORT:5432}"
-    database: "${DB_NAME}"
-    username: "${DB_USERNAME}"
-    password: "${DB_PASSWORD}"
-    schema: public
 
 resilience4j:
   circuitbreaker:

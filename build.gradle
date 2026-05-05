@@ -2,7 +2,8 @@ buildscript {
     ext {
         cleanArchitectureVersion = '4.4.1'
         springBootVersion = '4.0.3'
-        springAiVersion = '2.0.0-M4' // Cambiado de RC1 a M4
+        springAiVersion = '2.0.0-M5'
+        // Actualizado según revisión Context7 de MCP annotations/starter WebFlux
         sonarVersion = '7.2.3.7755'
         jacocoVersion = '0.8.14'
         pitestVersion = '1.19.0-rc.3'

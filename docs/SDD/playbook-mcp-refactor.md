@@ -13,7 +13,7 @@ convenciones del workflow "agent-api-to-mcp-workflow" del framework SDD de Banco
 | Java                                      | 25       |
 | Spring Boot                               | 4.x      |
 | Jackson                                   | 3        |
-| Spring AI                                 | 2.0.0 M4 |
+| Spring AI                                 | 2.0.0 M5 |
 | Gradle                                    | 9.5.0    |
 | Bancolombia Clean Architecture Scaffolder | 4.4.1    |
 

@@ -93,10 +93,11 @@ MCP Tool (entry-point)
 - [x] Clases Sample/Placeholder eliminadas de la ruta crítica
 - [x] Matriz de trazabilidad completa (`docs/api-contract-to-mcp.md`)
 - [x] Build sin errores: `./gradlew build` → **BUILD SUCCESSFUL**
-- [x] Tests sin fallos: `./gradlew test` → **31 tests OK**
+- [x] Tests sin fallos: `./gradlew test`
 - [x] Seguridad Fail-Closed: `anyExchange().authenticated()`
 - [x] Cero hardcoding: todas las URLs en `application.yaml` con `${ENV_VAR}`
-- [x] Paquete MCP correcto: `org.springframework.ai.mcp.annotation` (Spring AI 2.0.0-M4)
+- [x] Paquete MCP correcto: `org.springframework.ai.mcp.annotation` (Spring AI 2.0.0-M5)
 - [x] Dependencia AOP correcta: `spring-boot-starter-aspectj` (Spring Boot 4.x BOM)
 - [x] Granularidad 1:1: cada Tool delega a su propio UseCase
+- [x] Módulo `r2dbc-postgresql` removido del ensamblado por no estar en uso
 

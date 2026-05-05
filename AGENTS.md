@@ -4,7 +4,7 @@ This project is a reactive MCP (Model Context Protocol) Server built with Java, 
 
 ## Project Overview
 
-- **Core Technology**: Java 25, Spring Boot 4.x, Spring AI 2.0.0 M4, Jackson 3, Gradle 9.5.0.
+- **Core Technology**: Java 25, Spring Boot 4.x, Spring AI 2.0.0 M5, Jackson 3, Gradle 9.5.0.
 - **Scaffolder**: Bancolombia Clean Architecture Scaffolder v4.4.1.
 - **Architecture**: Clean Architecture (Domain, UseCases, Infrastructure, Application modules).
 - **Purpose**: Provide a set of tools and resources via the Model Context Protocol, specifically integrating with The Simpsons API.
