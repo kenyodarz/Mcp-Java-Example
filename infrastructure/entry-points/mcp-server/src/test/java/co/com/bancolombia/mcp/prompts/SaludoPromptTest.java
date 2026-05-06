@@ -9,28 +9,33 @@ import reactor.test.StepVerifier;
 
 class SaludoPromptTest {
 
-    private final SaludoPrompt prompt = new SaludoPrompt();
+    // ==================== TEST DOUBLES & SUT ====================
+    // Sistema bajo prueba (SUT): El prompt MCP para saludos personalizados
+    private final SaludoPrompt saludoPromptSUT = new SaludoPrompt();
 
     @Test
     @DisplayName("Debe generar un prompt de saludo correctamente")
     void shouldGenerateSaludoPrompt() {
-        // Given
-        String nombre = "Jorge";
+        // ==================== GIVEN ====================
+        // Preparar el nombre para personalizar el prompt de saludo
+        String personNameForSaludo = "Jorge";
 
-        // When
-        var resultMono = prompt.getSaludoPrompt(nombre);
+        // ==================== WHEN ====================
+        // Ejecutar la generación del prompt de saludo personalizado
+        var saludoPromptResultMono = saludoPromptSUT.getSaludoPrompt(personNameForSaludo);
 
-        // Then
-        StepVerifier.create(resultMono)
-                .assertNext(result -> {
-                    // Verifica contenido
-                    assert result.messages().size() == 1;
+        // ==================== THEN ====================
+        // Verificar que el prompt se construye correctamente con el nombre
+        StepVerifier.create(saludoPromptResultMono)
+                .assertNext(promptResult -> {
+                    // Verificar que hay exactamente un mensaje
+                    assert promptResult.messages().size() == 1;
 
-                    PromptMessage message = result.messages().getFirst();
-                    assert message.role() == Role.USER;
+                    PromptMessage promptMessage = promptResult.messages().getFirst();
+                    assert promptMessage.role() == Role.USER;
 
-                    TextContent content = (TextContent) message.content();
-                    assert content.text().equals("Hola Jorge, ¿en qué te ayudo?");
+                    TextContent promptContent = (TextContent) promptMessage.content();
+                    assert promptContent.text().equals("Hola Jorge, ¿en qué te ayudo?");
                 })
                 .verifyComplete();
     }
@@ -38,7 +43,15 @@ class SaludoPromptTest {
     @Test
     @DisplayName("Debe fallar si el nombre es null (validación de anotación @McpArg)")
     void shouldFailWhenNameIsNull() {
-        StepVerifier.create(prompt.getSaludoPrompt(null))
+        // ==================== GIVEN ====================
+        // Preparar un nombre nulo para probar validación
+
+        // ==================== WHEN ====================
+        // Ejecutar el prompt con nombre nulo
+
+        // ==================== THEN ====================
+        // Verificar que falla debido a validación de @McpArg(required=true)
+        StepVerifier.create(saludoPromptSUT.getSaludoPrompt(null))
                 .expectError() // Spring AI MCP valida @McpArg(required=true)
                 .verify();
     }

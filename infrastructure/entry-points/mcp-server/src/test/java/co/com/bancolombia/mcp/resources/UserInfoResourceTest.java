@@ -16,12 +16,19 @@ import reactor.test.StepVerifier;
 
 class UserInfoResourceTest {
 
-    private final JsonMapper mapper = JsonMapper.builder().build();
-    private final GetUserInfoUseCase useCase = Mockito.mock(GetUserInfoUseCase.class);
-    private final UserInfoResource resource =
-            new UserInfoResource(mapper, useCase);
+    // ==================== TEST DOUBLES ====================
+    // Mapper para serializar/deserializar JSON
+    private final JsonMapper jsonMapperDouble = JsonMapper.builder().build();
 
-    private UserInfo buildUserInfo() {
+    // Mock del caso de uso para obtener información de usuarios
+    private final GetUserInfoUseCase getUserInfoUseCaseMock = Mockito.mock(
+            GetUserInfoUseCase.class);
+
+    // Sistema bajo prueba (SUT): El recurso MCP que expone la información de usuarios
+    private final UserInfoResource userInfoResourceSUT =
+            new UserInfoResource(jsonMapperDouble, getUserInfoUseCaseMock);
+
+    private UserInfo buildExpectedHomerSimpsonsUserInfo() {
         return UserInfo.builder()
                 .id(1)
                 .age(39)
@@ -39,79 +46,90 @@ class UserInfoResourceTest {
     @Test
     @DisplayName("Debe retornar información del usuario en JSON usando ReadResourceResult")
     void shouldReturnUserInfoSuccessfully() {
+        // ==================== GIVEN ====================
+        // Preparar la información del usuario esperada
+        UserInfo expectedUserInfo = buildExpectedHomerSimpsonsUserInfo();
 
-        // Given: el caso de uso retorna UserInfo
-        UserInfo userInfo = buildUserInfo();
-        Mockito.when(useCase.execute(1)).thenReturn(Mono.just(userInfo));
+        // Configurar el mock del caso de uso
+        Mockito.when(getUserInfoUseCaseMock.execute(1)).thenReturn(Mono.just(expectedUserInfo));
 
-        // When
-        var resultMono = resource.getUserInfo("1");
+        // ==================== WHEN ====================
+        // Ejecutar la solicitud del recurso para obtener la información del usuario
+        var userInfoResourceResultMono = userInfoResourceSUT.getUserInfo("1");
 
-        // Then
-        StepVerifier.create(resultMono)
-                .assertNext(result -> {
+        // ==================== THEN ====================
+        // Verificar que el recurso retorna información válida en formato JSON
+        StepVerifier.create(userInfoResourceResultMono)
+                .assertNext(readResourceResult -> {
 
-                    List<ResourceContents> contents = result.contents();
-                    assert contents.size() == 1;
+                    List<ResourceContents> resourceContentsList = readResourceResult.contents();
+                    assert resourceContentsList.size() == 1;
 
-                    ResourceContents content = contents.getFirst();
-                    assert content instanceof TextResourceContents;
+                    ResourceContents resourceContent = resourceContentsList.getFirst();
+                    assert resourceContent instanceof TextResourceContents;
 
-                    TextResourceContents text = (TextResourceContents) content;
+                    TextResourceContents textResourceContent = (TextResourceContents) resourceContent;
 
-                    assert text.uri().equals("resource://users/1");
-                    assert text.mimeType().equals("application/json");
+                    assert textResourceContent.uri().equals("resource://users/1");
+                    assert textResourceContent.mimeType().equals("application/json");
 
-                    // Validamos JSON válido
+                    // Validar que el JSON es válido
                     JsonNode jsonNode;
                     try {
-                        jsonNode = mapper.readTree(text.text());
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                        jsonNode = jsonMapperDouble.readTree(textResourceContent.text());
+                    } catch (JsonProcessingException jsonEx) {
+                        throw new RuntimeException(jsonEx);
                     }
 
-                    // Validamos SOLO campos obligatorios del modelo UserInfo
+                    // Validar SOLO campos obligatorios del modelo UserInfo
                     assert jsonNode.get("id").asInt() == 1;
                     assert jsonNode.get("name").asText().equals("Homer Simpson");
                     assert jsonNode.get("gender").asText().equals("Male");
                     assert jsonNode.get("occupation").asText().equals("Safety Inspector");
                     assert jsonNode.get("status").asText().equals("Alive");
 
-                    // Validamos que 'phrases' exista
+                    // Validar que 'phrases' existe
                     assert jsonNode.get("phrases").isArray();
 
                 })
                 .verifyComplete();
 
-        Mockito.verify(useCase).execute(1);
+        // Verificar que el caso de uso fue invocado
+        Mockito.verify(getUserInfoUseCaseMock).execute(1);
     }
 
 
     @Test
     @DisplayName("Debe retornar error cuando el ID es inválido")
     void shouldReturnErrorForInvalidUserId() {
+        // ==================== GIVEN ====================
+        // Preparar un ID de usuario inválido (no es un número)
+        String invalidUserIdParameter = "abc";
 
-        // When
-        var resultMono = resource.getUserInfo("abc");
+        // ==================== WHEN ====================
+        // Ejecutar la solicitud del recurso con un ID inválido
+        var userInfoResourceResultMono = userInfoResourceSUT.getUserInfo(invalidUserIdParameter);
 
-        // Then
-        StepVerifier.create(resultMono)
-                .assertNext(result -> {
-                    ResourceContents content = result.contents().getFirst();
-                    assert content instanceof TextResourceContents;
+        // ==================== THEN ====================
+        // Verificar que el recurso retorna un error JSON
+        StepVerifier.create(userInfoResourceResultMono)
+                .assertNext(readResourceResult -> {
+                    ResourceContents resourceContent = readResourceResult.contents().getFirst();
+                    assert resourceContent instanceof TextResourceContents;
 
-                    TextResourceContents text = (TextResourceContents) content;
+                    TextResourceContents textResourceContent = (TextResourceContents) resourceContent;
 
-                    assert text.uri().equals("resource://users/abc");
-                    assert text.mimeType().equals("application/json");
+                    assert textResourceContent.uri().equals("resource://users/abc");
+                    assert textResourceContent.mimeType().equals("application/json");
 
-                    String json = text.text();
-                    assert json.contains("error");
-                    assert json.contains("userId");
-                    assert json.contains("IllegalArgumentException");
+                    String errorJsonResponse = textResourceContent.text();
+                    assert errorJsonResponse.contains("error");
+                    assert errorJsonResponse.contains("userId");
+                    assert errorJsonResponse.contains("IllegalArgumentException");
                 })
                 .verifyComplete();
 
-        Mockito.verifyNoInteractions(useCase);
+        // Verificar que el caso de uso NO fue invocado (error detectado antes)
+        Mockito.verifyNoInteractions(getUserInfoUseCaseMock);
     }
 }

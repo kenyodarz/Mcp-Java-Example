@@ -12,15 +12,23 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import reactor.core.publisher.Mono;
 
-public class UseCasesConfigTest {
+class UseCasesConfigTest {
 
     @Test
     void testUseCaseBeansExist() {
-        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfig.class)) {
-            String[] beanNames = context.getBeanDefinitionNames();
+        // ==================== GIVEN ====================
+        // Preparar el contexto de aplicación con la configuración de casos de uso
 
+        try (AnnotationConfigApplicationContext applicationContextForTest = new AnnotationConfigApplicationContext(
+                TestConfig.class)) {
+            // ==================== WHEN ====================
+            // Obtener todos los nombres de beans del contexto
+            String[] beanNamesFromContext = applicationContextForTest.getBeanDefinitionNames();
+
+            // ==================== THEN ====================
+            // Verificar que al menos existe un bean que termine con "UseCase"
             boolean useCaseBeanFound = false;
-            for (String beanName : beanNames) {
+            for (String beanName : beanNamesFromContext) {
                 if (beanName.endsWith("UseCase")) {
                     useCaseBeanFound = true;
                     break;

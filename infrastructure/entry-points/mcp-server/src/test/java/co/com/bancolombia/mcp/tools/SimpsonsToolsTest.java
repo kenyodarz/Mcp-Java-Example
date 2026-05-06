@@ -21,57 +21,96 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class SimpsonsToolsTest {
 
+    // ==================== TEST DOUBLES ====================
+    // Mocks de los casos de uso para obtener datos de Simpsons
     @Mock
-    private GetCharacterUseCase getCharacterUseCase;
+    private GetCharacterUseCase getCharacterUseCaseMock;
     @Mock
-    private GetEpisodeUseCase getEpisodeUseCase;
+    private GetEpisodeUseCase getEpisodeUseCaseMock;
     @Mock
-    private GetLocationUseCase getLocationUseCase;
+    private GetLocationUseCase getLocationUseCaseMock;
 
-    private SimpsonsTools tools;
+    // Sistema bajo prueba (SUT): Las herramientas MCP que exponen los casos de uso
+    private SimpsonsTools simpsonsToolsSUT;
 
     @BeforeEach
     void setUp() {
-        tools = new SimpsonsTools(getCharacterUseCase, getEpisodeUseCase, getLocationUseCase);
+        // Inicializar las herramientas MCP con los mocks de los casos de uso
+        simpsonsToolsSUT = new SimpsonsTools(getCharacterUseCaseMock, getEpisodeUseCaseMock,
+                getLocationUseCaseMock);
     }
 
     @Test
     void shouldGetCharacterThroughUseCase() {
-        SimpsonsCharacter character = SimpsonsCharacter.builder().id(1).name("Homer Simpson")
+        // ==================== GIVEN ====================
+        // Preparar un character esperado con datos de Homer
+        SimpsonsCharacter expectedCharacter = SimpsonsCharacter.builder()
+                .id(1)
+                .name("Homer Simpson")
                 .build();
-        when(getCharacterUseCase.execute(1)).thenReturn(Mono.just(character));
 
-        StepVerifier.create(tools.getCharacter(1))
-                .assertNext(result -> assertEquals("Homer Simpson", result.getName()))
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar el character
+        when(getCharacterUseCaseMock.execute(1)).thenReturn(Mono.just(expectedCharacter));
+
+        // ==================== THEN ====================
+        // Verificar que la herramienta MCP retorna el character correcto
+        StepVerifier.create(simpsonsToolsSUT.getCharacter(1))
+                .assertNext(
+                        characterResult -> assertEquals("Homer Simpson", characterResult.getName()))
                 .verifyComplete();
 
-        verify(getCharacterUseCase).execute(1);
+        // Verificar que el caso de uso fue invocado correctamente
+        verify(getCharacterUseCaseMock).execute(1);
     }
 
     @Test
     void shouldGetEpisodeThroughUseCase() {
-        SimpsonsEpisode episode = SimpsonsEpisode.builder().id(2).name("Bart the Genius").build();
-        when(getEpisodeUseCase.execute(2)).thenReturn(Mono.just(episode));
+        // ==================== GIVEN ====================
+        // Preparar un episode esperado
+        SimpsonsEpisode expectedEpisode = SimpsonsEpisode.builder()
+                .id(2)
+                .name("Bart the Genius")
+                .build();
 
-        StepVerifier.create(tools.getEpisode(2))
-                .assertNext(result -> assertEquals("Bart the Genius", result.getName()))
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar el episode
+        when(getEpisodeUseCaseMock.execute(2)).thenReturn(Mono.just(expectedEpisode));
+
+        // ==================== THEN ====================
+        // Verificar que la herramienta MCP retorna el episode correcto
+        StepVerifier.create(simpsonsToolsSUT.getEpisode(2))
+                .assertNext(
+                        episodeResult -> assertEquals("Bart the Genius", episodeResult.getName()))
                 .verifyComplete();
 
-        verify(getEpisodeUseCase).execute(2);
+        // Verificar que el caso de uso fue invocado correctamente
+        verify(getEpisodeUseCaseMock).execute(2);
     }
 
     @Test
     void shouldGetLocationThroughUseCase() {
-        SimpsonsLocation location = SimpsonsLocation.builder().id(3)
-                .name("Springfield Nuclear Power Plant").build();
-        when(getLocationUseCase.execute(3)).thenReturn(Mono.just(location));
+        // ==================== GIVEN ====================
+        // Preparar una location esperada
+        SimpsonsLocation expectedLocation = SimpsonsLocation.builder()
+                .id(3)
+                .name("Springfield Nuclear Power Plant")
+                .build();
 
-        StepVerifier.create(tools.getLocation(3))
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar la location
+        when(getLocationUseCaseMock.execute(3)).thenReturn(Mono.just(expectedLocation));
+
+        // ==================== THEN ====================
+        // Verificar que la herramienta MCP retorna la location correcta
+        StepVerifier.create(simpsonsToolsSUT.getLocation(3))
                 .assertNext(
-                        result -> assertEquals("Springfield Nuclear Power Plant", result.getName()))
+                        locationResult -> assertEquals("Springfield Nuclear Power Plant",
+                                locationResult.getName()))
                 .verifyComplete();
 
-        verify(getLocationUseCase).execute(3);
+        // Verificar que el caso de uso fue invocado correctamente
+        verify(getLocationUseCaseMock).execute(3);
     }
 }
 

@@ -17,24 +17,35 @@ import reactor.test.StepVerifier;
 
 class McpSecurityConfigTest {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    // ==================== TEST DOUBLES ====================
+    // Mapper para procesar claims de JWT
+    private final ObjectMapper objectMapperForJwtProcessing = new ObjectMapper();
 
     @Test
     void shouldConvertJwtClaimsIntoAuthorities() {
-        McpSecurityConfig config = new McpSecurityConfig(
+        // ==================== GIVEN ====================
+        // Preparar la configuración de seguridad MCP
+        McpSecurityConfig mcpSecurityConfigSUT = new McpSecurityConfig(
                 "https://issuer.example.com",
                 "client-id",
                 "/roles",
-                mapper);
+                objectMapperForJwtProcessing);
 
-        Jwt jwt = new Jwt(
+        // Preparar un JWT con roles MCP
+        Jwt jwtTokenWithMcpRoles = new Jwt(
                 "token-value",
                 Instant.now(),
                 Instant.now().plusSeconds(300),
                 Map.of("alg", "none"),
                 Map.of("sub", "jorge", "roles", List.of("MCP.ADMIN", "MCP.TOOL.SIMPSONS")));
 
-        StepVerifier.create(config.jwtAuthenticationConverter().convert(jwt))
+        // ==================== WHEN ====================
+        // Convertir el JWT en un objeto Authentication con autoridades
+
+        // ==================== THEN ====================
+        // Verificar que los roles se convierten correctamente a autoridades
+        StepVerifier.create(
+                        mcpSecurityConfigSUT.jwtAuthenticationConverter().convert(jwtTokenWithMcpRoles))
                 .assertNext(authentication -> {
                     assertTrue(authentication.getAuthorities()
                             .contains(new SimpleGrantedAuthority("ROLE_MCP.ADMIN")));
@@ -47,23 +58,33 @@ class McpSecurityConfigTest {
 
     @Test
     void shouldReturnEmptyAuthoritiesWhenClaimCannotBeConverted() {
-        McpSecurityConfig config = new McpSecurityConfig(
+        // ==================== GIVEN ====================
+        // Preparar la configuración de seguridad MCP
+        McpSecurityConfig mcpSecurityConfigSUT = new McpSecurityConfig(
                 "https://issuer.example.com",
                 "client-id",
                 "/roles",
-                mapper);
+                objectMapperForJwtProcessing);
 
-        Jwt jwt = new Jwt(
+        // Preparar un JWT con un claim 'roles' que no es un array (caso de error)
+        Jwt jwtTokenWithInvalidRolesFormat = new Jwt(
                 "token-value",
                 Instant.now(),
                 Instant.now().plusSeconds(300),
                 Map.of("alg", "none"),
                 Map.of("sub", "jorge", "roles", "not-an-array"));
 
-        StepVerifier.create(config.jwtAuthenticationConverter().convert(jwt))
+        // ==================== WHEN ====================
+        // Intentar convertir el JWT con formato de roles inválido
+
+        // ==================== THEN ====================
+        // Verificar que no se generan autoridades con prefijo ROLE_ pero sí retorna el usuario
+        StepVerifier.create(mcpSecurityConfigSUT.jwtAuthenticationConverter()
+                        .convert(jwtTokenWithInvalidRolesFormat))
                 .assertNext(authentication -> {
                     assertTrue(authentication.getAuthorities().stream()
-                            .noneMatch(authority -> authority.getAuthority().startsWith("ROLE_")));
+                            .noneMatch(authority -> authority.getAuthority() != null
+                                    && authority.getAuthority().startsWith("ROLE_")));
                     assertNotNull(authentication.getName());
                 })
                 .verifyComplete();
@@ -71,13 +92,20 @@ class McpSecurityConfigTest {
 
     @Test
     void shouldBuildSecurityWebFilterChain() {
-        McpSecurityConfig config = new McpSecurityConfig(
+        // ==================== GIVEN ====================
+        // Preparar la configuración de seguridad MCP
+        McpSecurityConfig mcpSecurityConfigSUT = new McpSecurityConfig(
                 "https://issuer.example.com",
                 "client-id",
                 "/roles",
-                mapper);
+                objectMapperForJwtProcessing);
 
-        assertNotNull(config.securityWebFilterChain(ServerHttpSecurity.http(),
+        // ==================== WHEN ====================
+        // Construir la cadena de filtros de seguridad web
+
+        // ==================== THEN ====================
+        // Verificar que la cadena de filtros se construye correctamente
+        assertNotNull(mcpSecurityConfigSUT.securityWebFilterChain(ServerHttpSecurity.http(),
                 mock(ReactiveJwtDecoder.class)));
     }
 }

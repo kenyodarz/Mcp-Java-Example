@@ -11,31 +11,53 @@ import reactor.test.StepVerifier;
 
 class SimpsonsPromptsTest {
 
-    private final SimpsonsPrompts prompts = new SimpsonsPrompts();
+    // ==================== TEST DOUBLES & SUT ====================
+    // Sistema bajo prueba (SUT): Las prompts MCP para Simpsons
+    private final SimpsonsPrompts simpsonsPromptsSUT = new SimpsonsPrompts();
 
     @Test
     void shouldBuildCharacterProfilePrompt() {
-        StepVerifier.create(prompts.characterProfile("Homer Simpson", "Enfatiza su familia"))
-                .assertNext(result -> {
-                    assertEquals("Perfil de personaje", result.description());
-                    PromptMessage message = result.messages().getFirst();
-                    assertEquals(Role.USER, message.role());
-                    assertTrue(((TextContent) message.content()).text().contains("Homer Simpson"));
-                    assertTrue(((TextContent) message.content()).text()
-                            .contains("Enfatiza su familia"));
+        // ==================== GIVEN ====================
+        // Preparar los parámetros para construir el prompt de perfil de character
+        String characterName = "Homer Simpson";
+        String characterProfile = "Enfatiza su familia";
+
+        // ==================== WHEN ====================
+        // Ejecutar la generación del prompt de perfil
+
+        // ==================== THEN ====================
+        // Verificar que el prompt se construye correctamente con la descripción y mensajes
+        StepVerifier.create(simpsonsPromptsSUT.characterProfile(characterName, characterProfile))
+                .assertNext(promptResult -> {
+                    assertEquals("Perfil de personaje", promptResult.description());
+                    PromptMessage promptMessage = promptResult.messages().getFirst();
+                    assertEquals(Role.USER, promptMessage.role());
+                    assertTrue(
+                            ((TextContent) promptMessage.content()).text().contains(characterName));
+                    assertTrue(((TextContent) promptMessage.content()).text()
+                            .contains(characterProfile));
                 })
                 .verifyComplete();
     }
 
     @Test
     void shouldBuildEpisodeSummaryPrompt() {
-        StepVerifier.create(prompts.episodeSummary("Treehouse of Horror"))
-                .assertNext(result -> {
-                    assertEquals("Resumen de episodio", result.description());
-                    PromptMessage message = result.messages().getFirst();
-                    assertEquals(Role.USER, message.role());
-                    assertTrue(((TextContent) message.content()).text()
-                            .contains("Treehouse of Horror"));
+        // ==================== GIVEN ====================
+        // Preparar el parámetro para construir el prompt de resumen de episode
+        String episodeName = "Treehouse of Horror";
+
+        // ==================== WHEN ====================
+        // Ejecutar la generación del prompt de resumen
+
+        // ==================== THEN ====================
+        // Verificar que el prompt se construye correctamente con la descripción y mensajes
+        StepVerifier.create(simpsonsPromptsSUT.episodeSummary(episodeName))
+                .assertNext(promptResult -> {
+                    assertEquals("Resumen de episodio", promptResult.description());
+                    PromptMessage promptMessage = promptResult.messages().getFirst();
+                    assertEquals(Role.USER, promptMessage.role());
+                    assertTrue(((TextContent) promptMessage.content()).text()
+                            .contains(episodeName));
                 })
                 .verifyComplete();
     }

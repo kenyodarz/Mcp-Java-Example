@@ -17,34 +17,42 @@ import reactor.test.StepVerifier;
 @DisplayName("GetMcpSecretsUseCase Tests")
 class GetMcpSecretsUseCaseTest {
 
+    // ==================== TEST DOUBLES ====================
+    // Mock del gateway que proporciona acceso a los secrets
     @Mock
-    private AsyncSecretsGateway secretsGateway;
+    private AsyncSecretsGateway secretsGatewayMock;
 
-    private GetMcpSecretsUseCase useCase;
+    // Sistema bajo prueba (SUT): Caso de uso para obtener secretos MCP
+    private GetMcpSecretsUseCase getMcpSecretsUseCaseSUT;
 
     @BeforeEach
     void setUp() {
-        useCase = new GetMcpSecretsUseCase(secretsGateway);
+        // Inicializar el caso de uso con el mock del gateway
+        getMcpSecretsUseCaseSUT = new GetMcpSecretsUseCase(secretsGatewayMock);
     }
 
     @Test
     @DisplayName("Debe obtener credenciales MCP exitosamente")
     void shouldGetMcpSecretsSuccessfully() {
-        // Arrange
-        String clientId = "mcp-client-123";
-        String clientSecret = "mcp-secret-456";
+        // ==================== GIVEN ====================
+        // Preparar credenciales MCP esperadas
+        String expectedClientId = "mcp-client-123";
+        String expectedClientSecret = "mcp-secret-456";
 
-        when(secretsGateway.getSecret("mcp-client-id"))
-                .thenReturn(Mono.just(clientId));
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar las credenciales
+        when(secretsGatewayMock.getSecret("mcp-client-id"))
+                .thenReturn(Mono.just(expectedClientId));
 
-        when(secretsGateway.getSecret("mcp-client-secret"))
-                .thenReturn(Mono.just(clientSecret));
+        when(secretsGatewayMock.getSecret("mcp-client-secret"))
+                .thenReturn(Mono.just(expectedClientSecret));
 
-        // Act & Assert
-        StepVerifier.create(useCase.execute())
-                .expectNextMatches(creds ->
-                        creds.get("clientId").equals(clientId) &&
-                                creds.get("clientSecret").equals(clientSecret)
+        // ==================== THEN ====================
+        // Verificar que el caso de uso retorna las credenciales en un Map
+        StepVerifier.create(getMcpSecretsUseCaseSUT.execute())
+                .expectNextMatches(credentialsMap ->
+                        credentialsMap.get("clientId").equals(expectedClientId) &&
+                                credentialsMap.get("clientSecret").equals(expectedClientSecret)
                 )
                 .verifyComplete();
     }
@@ -52,17 +60,21 @@ class GetMcpSecretsUseCaseTest {
     @Test
     @DisplayName("Debe manejar error cuando no existe algún secret")
     void shouldHandleErrorWhenSecretNotFound() {
-        // Arrange
-        RuntimeException exception = new RuntimeException("Secret not found");
+        // ==================== GIVEN ====================
+        // Preparar un escenario donde uno de los secrets no existe
+        RuntimeException secretNotFoundExceptionError = new RuntimeException("Secret not found");
 
-        when(secretsGateway.getSecret("mcp-client-id"))
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar error en el segundo secret
+        when(secretsGatewayMock.getSecret("mcp-client-id"))
                 .thenReturn(Mono.just("client-id"));
 
-        when(secretsGateway.getSecret("mcp-client-secret"))
-                .thenReturn(Mono.error(exception));
+        when(secretsGatewayMock.getSecret("mcp-client-secret"))
+                .thenReturn(Mono.error(secretNotFoundExceptionError));
 
-        // Act & Assert
-        StepVerifier.create(useCase.execute())
+        // ==================== THEN ====================
+        // Verificar que el error se propaga sin ser capturado
+        StepVerifier.create(getMcpSecretsUseCaseSUT.execute())
                 .expectErrorMessage("Secret not found")
                 .verify();
     }
@@ -70,24 +82,27 @@ class GetMcpSecretsUseCaseTest {
     @Test
     @DisplayName("Debe retornar Mono reactivo con Map")
     void shouldReturnReactiveMonoWithMap() {
-        // Arrange
-        String clientId = "client-789";
-        String clientSecret = "secret-101112";
+        // ==================== GIVEN ====================
+        // Preparar credenciales MCP para validar que retorna el tipo correcto
+        String expectedClientId = "client-789";
+        String expectedClientSecret = "secret-101112";
 
-        when(secretsGateway.getSecret("mcp-client-id"))
-                .thenReturn(Mono.just(clientId));
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar las credenciales
+        when(secretsGatewayMock.getSecret("mcp-client-id"))
+                .thenReturn(Mono.just(expectedClientId));
 
-        when(secretsGateway.getSecret("mcp-client-secret"))
-                .thenReturn(Mono.just(clientSecret));
+        when(secretsGatewayMock.getSecret("mcp-client-secret"))
+                .thenReturn(Mono.just(expectedClientSecret));
 
-        // Act
-        Mono<Map<String, String>> result = useCase.execute();
+        // ==================== THEN ====================
+        // Verificar que el resultado es un Mono reactivo con Map que contiene las claves esperadas
+        Mono<Map<String, String>> reactiveResultMono = getMcpSecretsUseCaseSUT.execute();
 
-        // Assert
-        StepVerifier.create(result)
-                .expectNextMatches(creds ->
-                        creds.containsKey("clientId") &&
-                                creds.containsKey("clientSecret")
+        StepVerifier.create(reactiveResultMono)
+                .expectNextMatches(credentialsMap ->
+                        credentialsMap.containsKey("clientId") &&
+                                credentialsMap.containsKey("clientSecret")
                 )
                 .verifyComplete();
     }

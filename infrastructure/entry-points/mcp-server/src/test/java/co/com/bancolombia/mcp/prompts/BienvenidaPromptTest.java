@@ -9,20 +9,30 @@ import reactor.test.StepVerifier;
 
 class BienvenidaPromptTest {
 
-    private final BienvenidaPrompt prompt = new BienvenidaPrompt();
+    // ==================== TEST DOUBLES & SUT ====================
+    // Sistema bajo prueba (SUT): El prompt MCP para mensajes de bienvenida
+    private final BienvenidaPrompt bienvenidaPromptSUT = new BienvenidaPrompt();
 
     @Test
     @DisplayName("Debe generar saludo sin título cuando es null")
     void shouldGenerateWelcomeWithoutTitleWhenNull() {
-        StepVerifier.create(prompt.getBienvenidaPrompt(null))
-                .assertNext(result -> {
-                    assert result.description().equals("Bienvenida formal");
+        // ==================== GIVEN ====================
+        // Preparar un título nulo para verificar saludo genérico
 
-                    PromptMessage message = result.messages().getFirst();
-                    TextContent content = (TextContent) message.content();
+        // ==================== WHEN ====================
+        // Ejecutar el prompt de bienvenida sin título
 
-                    assert message.role() == Role.USER;
-                    assert content.text().equals(
+        // ==================== THEN ====================
+        // Verificar que genera saludo genérico sin incluir un título
+        StepVerifier.create(bienvenidaPromptSUT.getBienvenidaPrompt(null))
+                .assertNext(promptResult -> {
+                    assert promptResult.description().equals("Bienvenida formal");
+
+                    PromptMessage promptMessage = promptResult.messages().getFirst();
+                    TextContent promptContent = (TextContent) promptMessage.content();
+
+                    assert promptMessage.role() == Role.USER;
+                    assert promptContent.text().equals(
                             "Bienvenido/a. Gracias por usar nuestro servicio. ¿Cómo podemos asistirle?"
                     );
                 })
@@ -32,12 +42,20 @@ class BienvenidaPromptTest {
     @Test
     @DisplayName("Debe generar saludo sin título cuando está vacío")
     void shouldGenerateWelcomeWithoutTitleWhenEmpty() {
-        StepVerifier.create(prompt.getBienvenidaPrompt(""))
-                .assertNext(result -> {
-                    PromptMessage message = result.messages().getFirst();
-                    TextContent content = (TextContent) message.content();
+        // ==================== GIVEN ====================
+        // Preparar un título vacío para verificar saludo genérico
 
-                    assert content.text().equals(
+        // ==================== WHEN ====================
+        // Ejecutar el prompt de bienvenida con título vacío
+
+        // ==================== THEN ====================
+        // Verificar que genera saludo genérico sin incluir un título
+        StepVerifier.create(bienvenidaPromptSUT.getBienvenidaPrompt(""))
+                .assertNext(promptResult -> {
+                    PromptMessage promptMessage = promptResult.messages().getFirst();
+                    TextContent promptContent = (TextContent) promptMessage.content();
+
+                    assert promptContent.text().equals(
                             "Bienvenido/a. Gracias por usar nuestro servicio. ¿Cómo podemos asistirle?"
                     );
                 })
@@ -47,12 +65,21 @@ class BienvenidaPromptTest {
     @Test
     @DisplayName("Debe generar saludo con título cuando es enviado")
     void shouldGenerateWelcomeWithTitle() {
-        StepVerifier.create(prompt.getBienvenidaPrompt("Dr. House"))
-                .assertNext(result -> {
-                    PromptMessage message = result.messages().getFirst();
-                    TextContent content = (TextContent) message.content();
+        // ==================== GIVEN ====================
+        // Preparar un título personalizado para el saludo
+        String personalizedGreetingTitle = "Dr. House";
 
-                    assert content.text().equals(
+        // ==================== WHEN ====================
+        // Ejecutar el prompt de bienvenida con título personalizado
+
+        // ==================== THEN ====================
+        // Verificar que genera saludo personalizado incluyendo el título
+        StepVerifier.create(bienvenidaPromptSUT.getBienvenidaPrompt(personalizedGreetingTitle))
+                .assertNext(promptResult -> {
+                    PromptMessage promptMessage = promptResult.messages().getFirst();
+                    TextContent promptContent = (TextContent) promptMessage.content();
+
+                    assert promptContent.text().equals(
                             "Bienvenido/a, Dr. House. Gracias por usar nuestro servicio. ¿Cómo podemos asistirle?"
                     );
                 })

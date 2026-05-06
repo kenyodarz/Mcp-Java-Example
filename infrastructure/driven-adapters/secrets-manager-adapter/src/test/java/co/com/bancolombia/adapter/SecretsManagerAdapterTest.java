@@ -21,75 +21,95 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRespon
 @DisplayName("SecretsManagerAdapter Tests")
 class SecretsManagerAdapterTest {
 
+    // ==================== TEST DOUBLES ====================
+    // Mock del cliente AWS Secrets Manager para simular respuestas
     @Mock
-    private SecretsManagerAsyncClient secretsManagerAsyncClient;
+    private SecretsManagerAsyncClient secretsManagerAsyncClientMock;
 
-    private AsyncSecretsGateway secretsGateway;
+    // Sistema bajo prueba (SUT): El adaptador que actúa como gateway para secrets
+    private AsyncSecretsGateway secretsGatewaySUT;
 
     @BeforeEach
     void setUp() {
-        secretsGateway = new SecretsManagerAdapter(secretsManagerAsyncClient);
+        // Inicializar el adaptador con el mock del cliente AWS
+        secretsGatewaySUT = new SecretsManagerAdapter(secretsManagerAsyncClientMock);
     }
 
     @Test
     @DisplayName("Debe obtener un secret exitosamente")
     void shouldGetSecretSuccessfully() {
-        // Arrange
-        String secretName = "test-secret";
-        String secretValue = "secret-value";
+        // ==================== GIVEN ====================
+        // Preparar el nombre del secret y el valor esperado
+        String secretNameToRetrieve = "test-secret";
+        String expectedSecretValue = "secret-value";
 
-        GetSecretValueResponse response = GetSecretValueResponse.builder()
-                .secretString(secretValue)
+        GetSecretValueResponse secretResponseFromAws = GetSecretValueResponse.builder()
+                .secretString(expectedSecretValue)
                 .build();
 
-        when(secretsManagerAsyncClient.getSecretValue(any(GetSecretValueRequest.class)))
-                .thenReturn(CompletableFuture.completedFuture(response));
+        // Configurar el mock para retornar el secret
+        when(secretsManagerAsyncClientMock.getSecretValue(any(GetSecretValueRequest.class)))
+                .thenReturn(CompletableFuture.completedFuture(secretResponseFromAws));
 
-        // Act & Assert
-        StepVerifier.create(secretsGateway.getSecret(secretName))
-                .expectNext(secretValue)
+        // ==================== WHEN ====================
+        // Ejecutar la solicitud para obtener el secret
+
+        // ==================== THEN ====================
+        // Verificar que el adaptador retorna el secret value correctamente
+        StepVerifier.create(secretsGatewaySUT.getSecret(secretNameToRetrieve))
+                .expectNext(expectedSecretValue)
                 .verifyComplete();
     }
 
     @Test
     @DisplayName("Debe manejar error cuando no existe el secret")
     void shouldHandleErrorWhenSecretNotFound() {
-        // Arrange
-        String secretName = "non-existent-secret";
-        RuntimeException exception = new RuntimeException("Secret not found");
+        // ==================== GIVEN ====================
+        // Preparar un escenario donde el secret no existe
+        String nonExistentSecretName = "non-existent-secret";
+        RuntimeException secretNotFoundExceptionError = new RuntimeException("Secret not found");
 
-        CompletableFuture<GetSecretValueResponse> failedFuture = new CompletableFuture<>();
-        failedFuture.completeExceptionally(exception);
+        CompletableFuture<GetSecretValueResponse> failedFutureFromAws = new CompletableFuture<>();
+        failedFutureFromAws.completeExceptionally(secretNotFoundExceptionError);
 
-        when(secretsManagerAsyncClient.getSecretValue(any(GetSecretValueRequest.class)))
-                .thenReturn(failedFuture);
+        // Configurar el mock para retornar un error
+        when(secretsManagerAsyncClientMock.getSecretValue(any(GetSecretValueRequest.class)))
+                .thenReturn(failedFutureFromAws);
 
-        // Act & Assert
-        StepVerifier.create(secretsGateway.getSecret(secretName))
-                .expectErrorMatches(error -> error instanceof RuntimeException)
+        // ==================== WHEN ====================
+        // Ejecutar la solicitud para obtener el secret que no existe
+
+        // ==================== THEN ====================
+        // Verificar que el error se propaga sin ser capturado
+        StepVerifier.create(secretsGatewaySUT.getSecret(nonExistentSecretName))
+                .expectErrorMatches(RuntimeException.class::isInstance)
                 .verify();
     }
 
     @Test
     @DisplayName("Debe retornar Mono reactivo")
     void shouldReturnReactiveMono() {
-        // Arrange
-        String secretName = "api-key";
-        String secretValue = "key-123456";
+        // ==================== GIVEN ====================
+        // Preparar datos para validar que retorna un Mono reactivo
+        String secretNameForReactivityTest = "api-key";
+        String expectedSecretValueForTest = "key-123456";
 
-        GetSecretValueResponse response = GetSecretValueResponse.builder()
-                .secretString(secretValue)
+        GetSecretValueResponse secretResponseFromAwsForTest = GetSecretValueResponse.builder()
+                .secretString(expectedSecretValueForTest)
                 .build();
 
-        when(secretsManagerAsyncClient.getSecretValue(any(GetSecretValueRequest.class)))
-                .thenReturn(CompletableFuture.completedFuture(response));
+        // Configurar el mock para retornar el secret
+        when(secretsManagerAsyncClientMock.getSecretValue(any(GetSecretValueRequest.class)))
+                .thenReturn(CompletableFuture.completedFuture(secretResponseFromAwsForTest));
 
-        // Act
-        Mono<String> result = secretsGateway.getSecret(secretName);
+        // ==================== WHEN ====================
+        // Ejecutar la solicitud para obtener el secret y capturar el Mono reactivo
+        Mono<String> reactiveResultMono = secretsGatewaySUT.getSecret(secretNameForReactivityTest);
 
-        // Assert
-        StepVerifier.create(result)
-                .expectNext(secretValue)
+        // ==================== THEN ====================
+        // Verificar que el resultado es efectivamente un Mono reactivo
+        StepVerifier.create(reactiveResultMono)
+                .expectNext(expectedSecretValueForTest)
                 .verifyComplete();
     }
 }

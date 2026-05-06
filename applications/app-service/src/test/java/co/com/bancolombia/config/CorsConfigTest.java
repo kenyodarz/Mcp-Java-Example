@@ -6,31 +6,80 @@ import org.junit.jupiter.api.Test;
 
 class CorsConfigTest {
 
-    private final CorsConfig config = new CorsConfig();
+    // ==================== TEST DOUBLES ====================
+    // Configuración bajo prueba: La configuración CORS
+    private final CorsConfig corsConfigSUT = new CorsConfig();
 
     @Test
     void shouldCreateDefaultCorsFilter() {
-        assertNotNull(config.corsWebFilterDefault());
+        // ==================== GIVEN ====================
+        // No es necesario preparar datos específicos
+
+        // ==================== WHEN ====================
+        // Crear el filtro CORS por defecto
+        var defaultCorsFilter = corsConfigSUT.corsWebFilterDefault();
+
+        // ==================== THEN ====================
+        // Verificar que se crea correctamente
+        assertNotNull(defaultCorsFilter);
     }
 
     @Test
     void shouldCreateLocalCorsFilter() {
-        assertNotNull(config.corsWebFilterLocal());
+        // ==================== GIVEN ====================
+        // No es necesario preparar datos específicos
+
+        // ==================== WHEN ====================
+        // Crear el filtro CORS para ambiente local
+        var localCorsFilter = corsConfigSUT.corsWebFilterLocal();
+
+        // ==================== THEN ====================
+        // Verificar que se crea correctamente
+        assertNotNull(localCorsFilter);
     }
 
     @Test
     void shouldFallbackToDefaultWhenOriginIsWildcard() {
-        assertNotNull(config.corsWebFilterOthers("*"));
+        // ==================== GIVEN ====================
+        // Preparar un origen con comodín (*)
+
+        // ==================== WHEN ====================
+        // Crear filtro CORS con origen comodín
+        var corsFilterWithWildcard = corsConfigSUT.corsWebFilterOthers("*");
+
+        // ==================== THEN ====================
+        // Verificar que retorna a la configuración por defecto
+        assertNotNull(corsFilterWithWildcard);
     }
 
     @Test
     void shouldCreateDevCorsFilterWithConfiguredOrigins() {
-        assertNotNull(config.corsWebFilterOthers("https://dev.example.com,https://qa.example.com"));
+        // ==================== GIVEN ====================
+        // Preparar una lista de orígenes para ambiente dev/qa
+        String devAndQaOrigins = "https://dev.example.com,https://qa.example.com";
+
+        // ==================== WHEN ====================
+        // Crear filtro CORS con esos orígenes
+        var devCorsFilter = corsConfigSUT.corsWebFilterOthers(devAndQaOrigins);
+
+        // ==================== THEN ====================
+        // Verificar que se crea correctamente
+        assertNotNull(devCorsFilter);
     }
 
     @Test
     void shouldCreateProductionCorsFilter() {
-        assertNotNull(config.corsWebFilterPdn("https://prod.example.com"));
+        // ==================== GIVEN ====================
+        // Preparar un origen para ambiente producción
+        String productionOrigin = "https://prod.example.com";
+
+        // ==================== WHEN ====================
+        // Crear filtro CORS para producción
+        var productionCorsFilter = corsConfigSUT.corsWebFilterPdn(productionOrigin);
+
+        // ==================== THEN ====================
+        // Verificar que se crea correctamente
+        assertNotNull(productionCorsFilter);
     }
 }
 

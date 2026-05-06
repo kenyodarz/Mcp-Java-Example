@@ -16,44 +16,56 @@ import reactor.test.StepVerifier;
 @DisplayName("GetApiSecretUseCase Tests")
 class GetApiSecretUseCaseTest {
 
+    // ==================== TEST DOUBLES ====================
+    // Mock del gateway que proporciona acceso a los secrets
     @Mock
-    private AsyncSecretsGateway secretsGateway;
+    private AsyncSecretsGateway secretsGatewayMock;
 
-    private GetApiSecretUseCase useCase;
+    // Sistema bajo prueba (SUT): Caso de uso para obtener secrets de API
+    private GetApiSecretUseCase getApiSecretUseCaseSUT;
 
     @BeforeEach
     void setUp() {
-        useCase = new GetApiSecretUseCase(secretsGateway);
+        // Inicializar el caso de uso con el mock del gateway
+        getApiSecretUseCaseSUT = new GetApiSecretUseCase(secretsGatewayMock);
     }
 
     @Test
     @DisplayName("Debe obtener un secret de API exitosamente")
     void shouldGetApiSecretSuccessfully() {
-        // Arrange
-        String secretName = "api-consumer-key";
-        String secretValue = "consumer-key-12345";
+        // ==================== GIVEN ====================
+        // Preparar el nombre del secret y el valor esperado
+        String secretNameToRequest = "api-consumer-key";
+        String expectedSecretValue = "consumer-key-12345";
 
-        when(secretsGateway.getSecret(secretName))
-                .thenReturn(Mono.just(secretValue));
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar el secret
+        when(secretsGatewayMock.getSecret(secretNameToRequest))
+                .thenReturn(Mono.just(expectedSecretValue));
 
-        // Act & Assert
-        StepVerifier.create(useCase.execute(secretName))
-                .expectNext(secretValue)
+        // ==================== THEN ====================
+        // Verificar que el caso de uso retorna el secret esperado
+        StepVerifier.create(getApiSecretUseCaseSUT.execute(secretNameToRequest))
+                .expectNext(expectedSecretValue)
                 .verifyComplete();
     }
 
     @Test
     @DisplayName("Debe manejar error cuando no existe el secret")
     void shouldHandleErrorWhenSecretNotFound() {
-        // Arrange
-        String secretName = "non-existent-secret";
-        RuntimeException exception = new RuntimeException("Secret not found");
+        // ==================== GIVEN ====================
+        // Preparar un escenario donde el secret no existe
+        String nonExistentSecretName = "non-existent-secret";
+        RuntimeException secretNotFoundExceptionError = new RuntimeException("Secret not found");
 
-        when(secretsGateway.getSecret(secretName))
-                .thenReturn(Mono.error(exception));
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar un error
+        when(secretsGatewayMock.getSecret(nonExistentSecretName))
+                .thenReturn(Mono.error(secretNotFoundExceptionError));
 
-        // Act & Assert
-        StepVerifier.create(useCase.execute(secretName))
+        // ==================== THEN ====================
+        // Verificar que el error se propaga sin ser capturado
+        StepVerifier.create(getApiSecretUseCaseSUT.execute(nonExistentSecretName))
                 .expectErrorMessage("Secret not found")
                 .verify();
     }
@@ -61,19 +73,22 @@ class GetApiSecretUseCaseTest {
     @Test
     @DisplayName("Debe retornar Mono reactivo")
     void shouldReturnReactiveMono() {
-        // Arrange
-        String secretName = "api-key";
-        String secretValue = "key-123456";
+        // ==================== GIVEN ====================
+        // Preparar el nombre del secret y el valor esperado para validar reactividad
+        String secretNameToRequest = "api-key";
+        String expectedSecretValue = "key-123456";
 
-        when(secretsGateway.getSecret(secretName))
-                .thenReturn(Mono.just(secretValue));
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar el secret
+        when(secretsGatewayMock.getSecret(secretNameToRequest))
+                .thenReturn(Mono.just(expectedSecretValue));
 
-        // Act
-        Mono<String> result = useCase.execute(secretName);
+        // ==================== THEN ====================
+        // Verificar que el resultado es un Mono reactivo
+        Mono<String> reactiveResultMono = getApiSecretUseCaseSUT.execute(secretNameToRequest);
 
-        // Assert
-        StepVerifier.create(result)
-                .expectNext(secretValue)
+        StepVerifier.create(reactiveResultMono)
+                .expectNext(expectedSecretValue)
                 .verifyComplete();
     }
 }

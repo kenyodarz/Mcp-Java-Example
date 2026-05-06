@@ -11,11 +11,21 @@ class JsonMapperConfigTest {
 
     @Test
     void testJsonMapperBean() {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+        // ==================== GIVEN ====================
+        // Preparar el contexto de aplicación con la configuración de JsonMapper
+        AnnotationConfigApplicationContext applicationContextForTest = new AnnotationConfigApplicationContext(
                 JsonMapperConfig.class);
-        JsonMapper objectMapper = context.getBean(JsonMapper.class);
-        assertNotNull(objectMapper);
+
+        // ==================== WHEN ====================
+        // Recuperar el bean de JsonMapper del contexto
+        JsonMapper jsonMapperBean = applicationContextForTest.getBean(JsonMapper.class);
+
+        // ==================== THEN ====================
+        // Verificar que el bean fue creado correctamente
+        assertNotNull(jsonMapperBean);
         assertTrue(true);
-        context.close();
+
+        // Limpiar recursos del contexto
+        applicationContextForTest.close();
     }
 }

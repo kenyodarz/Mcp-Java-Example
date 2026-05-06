@@ -12,25 +12,34 @@ import reactor.test.StepVerifier;
 
 class RestConsumerTest {
 
-    private MockWebServer server;
-    private RestConsumer consumer;
+    // ==================== TEST DOUBLES ====================
+    // Mock del servidor HTTP que simula las respuestas de la API externa
+    private MockWebServer mockWebServerDouble;
+
+    // Sistema bajo prueba (SUT): El cliente HTTP consumer que realiza las llamadas
+    private RestConsumer restConsumerSUT;
 
     @BeforeEach
     void setUp() throws Exception {
-        server = new MockWebServer();
-        server.start();
-        consumer = new RestConsumer(
-                WebClient.builder().baseUrl(server.url("/").toString()).build());
+        // Inicializar el mock server
+        mockWebServerDouble = new MockWebServer();
+        mockWebServerDouble.start();
+        // Inicializar el cliente consumer apuntando al mock server
+        restConsumerSUT = new RestConsumer(
+                WebClient.builder().baseUrl(mockWebServerDouble.url("/").toString()).build());
     }
 
     @AfterEach
     void tearDown() throws Exception {
-        server.shutdown();
+        // Limpiar recursos del mock server
+        mockWebServerDouble.shutdown();
     }
 
     @Test
     void shouldGetCharacterById() throws Exception {
-        server.enqueue(new MockResponse()
+        // ==================== GIVEN ====================
+        // Preparar una respuesta JSON de un character desde la API
+        MockResponse characterJsonResponse = new MockResponse()
                 .setHeader("Content-Type", "application/json")
                 .setBody("""
                         {
@@ -39,22 +48,31 @@ class RestConsumerTest {
                           "gender": "Male",
                           "portrait_path": "/character/1.webp"
                         }
-                        """));
+                        """);
+        mockWebServerDouble.enqueue(characterJsonResponse);
 
-        StepVerifier.create(consumer.getCharacterById(1))
-                .assertNext(response -> {
-                    assertEquals(1, response.getId());
-                    assertEquals("Homer Simpson", response.getName());
-                    assertEquals("Male", response.getGender());
+        // ==================== WHEN ====================
+        // Ejecutar la llamada al cliente consumer para obtener el character
+
+        // ==================== THEN ====================
+        // Verificar que los datos se deserializan correctamente
+        StepVerifier.create(restConsumerSUT.getCharacterById(1))
+                .assertNext(characterResponse -> {
+                    assertEquals(1, characterResponse.getId());
+                    assertEquals("Homer Simpson", characterResponse.getName());
+                    assertEquals("Male", characterResponse.getGender());
                 })
                 .verifyComplete();
 
-        assertEquals("/characters/1", server.takeRequest().getPath());
+        // Verificar que la solicitud HTTP se realizó al endpoint correcto
+        assertEquals("/characters/1", mockWebServerDouble.takeRequest().getPath());
     }
 
     @Test
     void shouldGetEpisodeById() throws Exception {
-        server.enqueue(new MockResponse()
+        // ==================== GIVEN ====================
+        // Preparar una respuesta JSON de un episode desde la API
+        MockResponse episodeJsonResponse = new MockResponse()
                 .setHeader("Content-Type", "application/json")
                 .setBody("""
                         {
@@ -64,23 +82,32 @@ class RestConsumerTest {
                           "season": 1,
                           "image_path": "/episode/7.webp"
                         }
-                        """));
+                        """);
+        mockWebServerDouble.enqueue(episodeJsonResponse);
 
-        StepVerifier.create(consumer.getEpisodeById(7))
-                .assertNext(response -> {
-                    assertEquals(7, response.getId());
-                    assertEquals("The Call of the Simpsons", response.getName());
-                    assertEquals(7, response.getEpisodeNumber());
-                    assertEquals(1, response.getSeason());
+        // ==================== WHEN ====================
+        // Ejecutar la llamada al cliente consumer para obtener el episode
+
+        // ==================== THEN ====================
+        // Verificar que los datos se deserializan correctamente
+        StepVerifier.create(restConsumerSUT.getEpisodeById(7))
+                .assertNext(episodeResponse -> {
+                    assertEquals(7, episodeResponse.getId());
+                    assertEquals("The Call of the Simpsons", episodeResponse.getName());
+                    assertEquals(7, episodeResponse.getEpisodeNumber());
+                    assertEquals(1, episodeResponse.getSeason());
                 })
                 .verifyComplete();
 
-        assertEquals("/episodes/7", server.takeRequest().getPath());
+        // Verificar que la solicitud HTTP se realizó al endpoint correcto
+        assertEquals("/episodes/7", mockWebServerDouble.takeRequest().getPath());
     }
 
     @Test
     void shouldGetLocationById() throws Exception {
-        server.enqueue(new MockResponse()
+        // ==================== GIVEN ====================
+        // Preparar una respuesta JSON de una location desde la API
+        MockResponse locationJsonResponse = new MockResponse()
                 .setHeader("Content-Type", "application/json")
                 .setBody("""
                         {
@@ -88,17 +115,24 @@ class RestConsumerTest {
                           "name": "Moe's Tavern",
                           "description": "Bar clásico de Springfield"
                         }
-                        """));
+                        """);
+        mockWebServerDouble.enqueue(locationJsonResponse);
 
-        StepVerifier.create(consumer.getLocationById(9))
-                .assertNext(response -> {
-                    assertEquals(9, response.getId());
-                    assertEquals("Moe's Tavern", response.getName());
-                    assertEquals("Bar clásico de Springfield", response.getDescription());
+        // ==================== WHEN ====================
+        // Ejecutar la llamada al cliente consumer para obtener la location
+
+        // ==================== THEN ====================
+        // Verificar que los datos se deserializan correctamente
+        StepVerifier.create(restConsumerSUT.getLocationById(9))
+                .assertNext(locationResponse -> {
+                    assertEquals(9, locationResponse.getId());
+                    assertEquals("Moe's Tavern", locationResponse.getName());
+                    assertEquals("Bar clásico de Springfield", locationResponse.getDescription());
                 })
                 .verifyComplete();
 
-        assertEquals("/locations/9", server.takeRequest().getPath());
+        // Verificar que la solicitud HTTP se realizó al endpoint correcto
+        assertEquals("/locations/9", mockWebServerDouble.takeRequest().getPath());
     }
 }
 

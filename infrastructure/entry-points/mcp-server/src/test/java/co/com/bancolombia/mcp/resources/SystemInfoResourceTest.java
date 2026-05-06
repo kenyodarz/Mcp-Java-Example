@@ -10,34 +10,45 @@ import reactor.test.StepVerifier;
 @DisplayName("SystemInfoResource Unit Tests")
 class SystemInfoResourceTest {
 
-    private final JsonMapper mapper = JsonMapper.builder().build();
-    private final SystemInfoResource resource = new SystemInfoResource(mapper);
+    // ==================== TEST DOUBLES ====================
+    // Mapper para serializar/deserializar JSON
+    private final JsonMapper jsonMapperDouble = JsonMapper.builder().build();
+
+    // Sistema bajo prueba (SUT): El recurso MCP que expone la información del sistema
+    private final SystemInfoResource systemInfoResourceSUT = new SystemInfoResource(
+            jsonMapperDouble);
 
     @Test
     @DisplayName("Debe retornar información del sistema en formato JSON dentro de ReadResourceResult")
     void shouldReturnSystemInfo() {
+        // ==================== GIVEN ====================
+        // No hay preparación adicional necesaria para obtener información del sistema
 
-        var resultMono = resource.getSystemInfo();
+        // ==================== WHEN ====================
+        // Ejecutar la solicitud del recurso para obtener la información del sistema
+        var systemInfoResourceResultMono = systemInfoResourceSUT.getSystemInfo();
 
-        StepVerifier.create(resultMono)
-                .assertNext(result -> {
-                    var contents = result.contents();
+        // ==================== THEN ====================
+        // Verificar que el recurso retorna información del sistema válida en JSON
+        StepVerifier.create(systemInfoResourceResultMono)
+                .assertNext(readResourceResult -> {
+                    var resourceContentsList = readResourceResult.contents();
 
-                    assert contents.size() == 1;
+                    assert resourceContentsList.size() == 1;
 
-                    ResourceContents content = contents.getFirst();
-                    assert content instanceof TextResourceContents;
+                    ResourceContents resourceContent = resourceContentsList.getFirst();
+                    assert resourceContent instanceof TextResourceContents;
 
-                    TextResourceContents textContent = (TextResourceContents) content;
+                    TextResourceContents textResourceContent = (TextResourceContents) resourceContent;
 
-                    assert textContent.uri().equals("resource://system/info");
-                    assert textContent.mimeType().equals("application/json");
+                    assert textResourceContent.uri().equals("resource://system/info");
+                    assert textResourceContent.mimeType().equals("application/json");
 
-                    // Verifica que el JSON sea válido (no importa el orden)
+                    // Verificar que el JSON es válido (no importa el orden)
                     try {
-                        mapper.readTree(textContent.text());
-                    } catch (Exception e) {
-                        assert false : "El JSON no es válido";
+                        jsonMapperDouble.readTree(textResourceContent.text());
+                    } catch (Exception jsonParsingException) {
+                        assert false : "El JSON no es válido: " + jsonParsingException.getMessage();
                     }
                 })
                 .verifyComplete();

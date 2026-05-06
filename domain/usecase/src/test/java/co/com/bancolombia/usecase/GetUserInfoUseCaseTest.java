@@ -17,43 +17,63 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class GetUserInfoUseCaseTest {
 
+	// ==================== TEST DOUBLES ====================
+	// Mock del gateway que proporciona información de usuarios del adaptador
 	@Mock
-	private UserInfoGateway userInfoGateway;
+	private UserInfoGateway userInfoGatewayMock;
 
-	private GetUserInfoUseCase useCase;
+	// Sistema bajo prueba (SUT): El caso de uso que ejecuta la lógica de negocio
+	private GetUserInfoUseCase getUserInfoUseCaseSUT;
 
 	@BeforeEach
 	void setUp() {
-		useCase = new GetUserInfoUseCase(userInfoGateway);
+		// Inicializar el caso de uso con el mock del gateway
+		getUserInfoUseCaseSUT = new GetUserInfoUseCase(userInfoGatewayMock);
 	}
 
 	@Test
 	void shouldDelegateUserLookupToGateway() {
-		UserInfo userInfo = UserInfo.builder()
+		// ==================== GIVEN ====================
+		// Preparar datos de usuario esperados del gateway
+		UserInfo expectedUserInfo = UserInfo.builder()
 				.id(1)
 				.name("Homer Simpson")
 				.occupation("Safety Inspector")
 				.phrases(List.of("Doh!"))
 				.build();
 
-		when(userInfoGateway.getUserInfoById(1)).thenReturn(Mono.just(userInfo));
+		// ==================== WHEN ====================
+		// Configurar el mock para retornar la información de usuario
+		when(userInfoGatewayMock.getUserInfoById(1)).thenReturn(Mono.just(expectedUserInfo));
 
-		StepVerifier.create(useCase.execute(1))
-				.expectNext(userInfo)
+		// ==================== THEN ====================
+		// Verificar que el caso de uso delega la búsqueda al gateway correctamente
+		StepVerifier.create(getUserInfoUseCaseSUT.execute(1))
+				.expectNext(expectedUserInfo)
 				.verifyComplete();
 
-		verify(userInfoGateway).getUserInfoById(1);
+		// Verificar que el gateway fue invocado con el ID correcto
+		verify(userInfoGatewayMock).getUserInfoById(1);
 	}
 
 	@Test
 	void shouldPropagateGatewayErrors() {
-		when(userInfoGateway.getUserInfoById(99)).thenReturn(
-				Mono.error(new IllegalStateException("boom")));
+		// ==================== GIVEN ====================
+		// Preparar un escenario donde el gateway genera un error
+		IllegalStateException gatewayFailureException = new IllegalStateException("boom");
 
-		StepVerifier.create(useCase.execute(99))
+		// ==================== WHEN ====================
+		// Configurar el mock para retornar un error
+		when(userInfoGatewayMock.getUserInfoById(99)).thenReturn(
+				Mono.error(gatewayFailureException));
+
+		// ==================== THEN ====================
+		// Verificar que el error del gateway se propaga sin ser capturado
+		StepVerifier.create(getUserInfoUseCaseSUT.execute(99))
 				.expectErrorMessage("boom")
 				.verify();
 
-		verify(userInfoGateway).getUserInfoById(99);
+		// Verificar que el gateway fue invocado
+		verify(userInfoGatewayMock).getUserInfoById(99);
 	}
 }

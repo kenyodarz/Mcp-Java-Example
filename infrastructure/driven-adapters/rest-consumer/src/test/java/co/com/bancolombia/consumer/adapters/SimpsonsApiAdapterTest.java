@@ -21,19 +21,25 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class SimpsonsApiAdapterTest {
 
+    // ==================== TEST DOUBLES ====================
+    // Mock del cliente REST consumer que hace las llamadas externas a la API
     @Mock
-    private RestConsumer client;
+    private RestConsumer restConsumerClientMock;
 
-    private SimpsonsApiAdapter adapter;
+    // Sistema bajo prueba (SUT): El adaptador que implementa la lógica de mapeo
+    private SimpsonsApiAdapter simpsonsApiAdapterSUT;
 
     @BeforeEach
     void setUp() {
-        adapter = new SimpsonsApiAdapter(client);
+        // Inicializar el adaptador con el mock del cliente
+        simpsonsApiAdapterSUT = new SimpsonsApiAdapter(restConsumerClientMock);
     }
 
     @Test
     void shouldMapCharacterResponseToUserInfoIncludingNestedObjects() {
-        SimpsonsCharacterResponse response = SimpsonsCharacterResponse.builder()
+        // ==================== GIVEN ====================
+        // Preparar una respuesta de character con objetos anidados (episodes y shorts)
+        SimpsonsCharacterResponse characterResponseWithNestedObjects = SimpsonsCharacterResponse.builder()
                 .id(1)
                 .age(39)
                 .birthdate("1956-05-12")
@@ -58,9 +64,14 @@ class SimpsonsApiAdapterTest {
                         .build())
                 .build();
 
-        when(client.getCharacterById(1)).thenReturn(Mono.just(response));
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar la respuesta cuando se solicite el character por ID
+        when(restConsumerClientMock.getCharacterById(1)).thenReturn(
+                Mono.just(characterResponseWithNestedObjects));
 
-        StepVerifier.create(adapter.getUserInfoById(1))
+        // ==================== THEN ====================
+        // Verificar que los datos se mapean correctamente incluyendo objetos anidados
+        StepVerifier.create(simpsonsApiAdapterSUT.getUserInfoById(1))
                 .assertNext(userInfo -> {
                     assertEquals(1, userInfo.getId());
                     assertEquals("Homer Simpson", userInfo.getName());
@@ -72,19 +83,27 @@ class SimpsonsApiAdapterTest {
                 })
                 .verifyComplete();
 
-        verify(client).getCharacterById(1);
+        // Verificar que el cliente fue llamado correctamente
+        verify(restConsumerClientMock).getCharacterById(1);
     }
 
     @Test
     void shouldMapCharacterResponseToUserInfoWhenNestedObjectsAreNull() {
-        SimpsonsCharacterResponse response = SimpsonsCharacterResponse.builder()
+        // ==================== GIVEN ====================
+        // Preparar una respuesta de character con objetos anidados nulos
+        SimpsonsCharacterResponse characterResponseWithNullNestedObjects = SimpsonsCharacterResponse.builder()
                 .id(2)
                 .name("Bart Simpson")
                 .build();
 
-        when(client.getCharacterById(2)).thenReturn(Mono.just(response));
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar la respuesta cuando se solicite el character por ID
+        when(restConsumerClientMock.getCharacterById(2)).thenReturn(
+                Mono.just(characterResponseWithNullNestedObjects));
 
-        StepVerifier.create(adapter.getUserInfoById(2))
+        // ==================== THEN ====================
+        // Verificar que la conversión maneja correctamente los valores nulos
+        StepVerifier.create(simpsonsApiAdapterSUT.getUserInfoById(2))
                 .assertNext(userInfo -> {
                     assertEquals(2, userInfo.getId());
                     assertEquals("Bart Simpson", userInfo.getName());
@@ -96,15 +115,22 @@ class SimpsonsApiAdapterTest {
 
     @Test
     void shouldMapCharacterResponseToCharacter() {
-        SimpsonsCharacterResponse response = SimpsonsCharacterResponse.builder()
+        // ==================== GIVEN ====================
+        // Preparar una respuesta de character con frases asociadas
+        SimpsonsCharacterResponse characterResponseWithPhrases = SimpsonsCharacterResponse.builder()
                 .id(3)
                 .name("Lisa Simpson")
                 .phrases(List.of("If anyone wants me, I'll be in my room"))
                 .build();
 
-        when(client.getCharacterById(3)).thenReturn(Mono.just(response));
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar la respuesta cuando se solicite el character por ID
+        when(restConsumerClientMock.getCharacterById(3)).thenReturn(
+                Mono.just(characterResponseWithPhrases));
 
-        StepVerifier.create(adapter.getCharacterById(3))
+        // ==================== THEN ====================
+        // Verificar que el mapping de character es correcto incluyendo frases
+        StepVerifier.create(simpsonsApiAdapterSUT.getCharacterById(3))
                 .assertNext(character -> {
                     assertEquals(3, character.getId());
                     assertEquals("Lisa Simpson", character.getName());
@@ -115,16 +141,22 @@ class SimpsonsApiAdapterTest {
 
     @Test
     void shouldMapEpisodeResponseToEpisode() {
-        SimpsonsEpisodeResponse response = SimpsonsEpisodeResponse.builder()
+        // ==================== GIVEN ====================
+        // Preparar una respuesta de episode con todos sus datos
+        SimpsonsEpisodeResponse episodeResponse = SimpsonsEpisodeResponse.builder()
                 .id(4)
                 .name("Cape Feare")
                 .episodeNumber(2)
                 .season(5)
                 .build();
 
-        when(client.getEpisodeById(4)).thenReturn(Mono.just(response));
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar la respuesta cuando se solicite el episode por ID
+        when(restConsumerClientMock.getEpisodeById(4)).thenReturn(Mono.just(episodeResponse));
 
-        StepVerifier.create(adapter.getEpisodeById(4))
+        // ==================== THEN ====================
+        // Verificar que el mapping de episode es correcto
+        StepVerifier.create(simpsonsApiAdapterSUT.getEpisodeById(4))
                 .assertNext(episode -> {
                     assertEquals(4, episode.getId());
                     assertEquals("Cape Feare", episode.getName());
@@ -136,15 +168,21 @@ class SimpsonsApiAdapterTest {
 
     @Test
     void shouldMapLocationResponseToLocation() {
-        SimpsonsLocationResponse response = SimpsonsLocationResponse.builder()
+        // ==================== GIVEN ====================
+        // Preparar una respuesta de location con descripción
+        SimpsonsLocationResponse locationResponse = SimpsonsLocationResponse.builder()
                 .id(5)
                 .name("Springfield Elementary")
                 .description("Escuela primaria")
                 .build();
 
-        when(client.getLocationById(5)).thenReturn(Mono.just(response));
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar la respuesta cuando se solicite la location por ID
+        when(restConsumerClientMock.getLocationById(5)).thenReturn(Mono.just(locationResponse));
 
-        StepVerifier.create(adapter.getLocationById(5))
+        // ==================== THEN ====================
+        // Verificar que el mapping de location es correcto
+        StepVerifier.create(simpsonsApiAdapterSUT.getLocationById(5))
                 .assertNext(location -> {
                     assertEquals(5, location.getId());
                     assertEquals("Springfield Elementary", location.getName());
@@ -155,10 +193,18 @@ class SimpsonsApiAdapterTest {
 
     @Test
     void shouldPropagateRestConsumerErrors() {
-        when(client.getEpisodeById(77)).thenReturn(
-                Mono.error(new IllegalStateException("remote failure")));
+        // ==================== GIVEN ====================
+        // Preparar un escenario donde el cliente retorna un error
+        Exception remoteFailureException = new IllegalStateException("remote failure");
 
-        StepVerifier.create(adapter.getEpisodeById(77))
+        // ==================== WHEN ====================
+        // Configurar el mock para retornar un error cuando se solicite el episode por ID
+        when(restConsumerClientMock.getEpisodeById(77)).thenReturn(
+                Mono.error(remoteFailureException));
+
+        // ==================== THEN ====================
+        // Verificar que el error se propaga correctamente sin ser capturado
+        StepVerifier.create(simpsonsApiAdapterSUT.getEpisodeById(77))
                 .expectErrorMessage("remote failure")
                 .verify();
     }

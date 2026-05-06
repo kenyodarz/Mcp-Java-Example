@@ -10,15 +10,17 @@ class HealthToolTest {
     @Test
     @DisplayName("healthCheck debe retornar 'OK'")
     void healthCheckShouldReturnOK() {
+        // ==================== GIVEN ====================
+        // Preparar la herramienta MCP de health check
+        HealthTool healthToolSUT = new HealthTool();
 
-        // Arrange
-        HealthTool tool = new HealthTool();
+        // ==================== WHEN ====================
+        // Ejecutar el health check de la herramienta
+        var healthCheckResult = healthToolSUT.healthCheck();
 
-        // Act
-        var result = tool.healthCheck();
-
-        // Assert
-        StepVerifier.create(result)
+        // ==================== THEN ====================
+        // Verificar que el servidor está saludable retornando 'OK'
+        StepVerifier.create(healthCheckResult)
                 .expectNext("OK")
                 .verifyComplete();
     }
