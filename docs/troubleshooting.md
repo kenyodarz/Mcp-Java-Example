@@ -146,6 +146,190 @@ curl -X POST http://localhost:8080/mcp/stream \
 
 ---
 
+## 🔗 Problemas con API Externa (Simpsons API)
+
+### Error: "Connection timeout to Simpsons API"
+
+**Síntoma**: Requests al servicio de Simpsons demoran más de 5 segundos.
+
+**Causas posibles**:
+
+1. API externa está lenta
+2. Red inestable o latencia alta
+3. El timeout configurado es muy corto
+
+**Solución**:
+
+1. Verifica el timeout en `application.yaml`:
+
+```yaml
+adapter:
+   restconsumer:
+      timeout: 5000  # Milisegundos
+```
+
+2. Aumentar si es necesario:
+
+```yaml
+adapter:
+   restconsumer:
+      timeout: 10000  # 10 segundos
+```
+
+3. El sistema automáticamente:
+   - **Reintenta 3 veces** con backoff exponencial
+   - **Usa fallback** con datos por defecto si falla
+   - Retorna datos en caché si están disponibles
+
+### Error: "Simpsons API return 404 Not Found"
+
+**Síntoma**: Error indicando que el personaje/episodio/ubicación no existe.
+
+**Causas posibles**:
+
+1. ID incorrecto
+2. Elemento fue eliminado de la API
+3. El servidor está en mantenimiento
+
+**Solución**:
+
+```bash
+# Validar que el ID sea correcto
+# IDs válidos de personajes: 1-100 (aprox)
+
+curl "https://thesimpsonsapi.com/api/characters/1"
+# Respuesta exitosa: {"id": 1, "name": "Homer Simpson", ...}
+
+curl "https://thesimpsonsapi.com/api/characters/99999"
+# Respuesta: 404 Not Found
+```
+
+**Fallback**: Si el API retorna 404, el sistema:
+
+1. **Reintenta una vez más** (por si es error temporal)
+2. **Retorna un objeto por defecto** con valores seguros
+3. **Registra el error** en los logs
+
+### Error: "Simpsons API return 500 Server Error"
+
+**Síntoma**: La API externa está retornando errores de servidor.
+
+**Causas posibles**:
+
+1. API externa está caída
+2. Mantenimiento programado
+3. Error interno del servidor
+
+**Solución**:
+
+1. Verificar el estado de la API:
+
+```bash
+curl -I "https://thesimpsonsapi.com/api/characters/1"
+# HTTP/1.1 200 OK ✅ (está operativa)
+# HTTP/1.1 500 Internal Server Error ❌ (tiene problemas)
+```
+
+2. El sistema automáticamente:
+   - **Reintenta 3 veces** con espera exponencial
+   - **Abre el circuit breaker** después de múltiples fallos
+   - **Retorna fallback** mientras se recupera
+
+3. Espera 10 segundos antes de reintentar (ver logs):
+
+```bash
+grep "Circuit breaker" logs/application.log
+# Si ves "OPEN", espera a que se cierre
+```
+
+### Error: "Circuit Breaker OPEN"
+
+**Síntoma**: Todos los requests fallan inmediatamente, error: `CircuitBreakerOpenException`.
+
+**Causas posibles**:
+
+1. Múltiples fallos consecutivos a la API
+2. El circuito se abrió para proteger el sistema
+3. Está en estado "HALF_OPEN" esperando recuperación
+
+**Cómo funciona el Circuit Breaker**:
+
+```
+CLOSED (normal)
+    ↓ (50% fallos)
+OPEN (se bloquea)
+    ↓ (10s después)
+HALF_OPEN (prueba)
+    ↓
+CLOSED o OPEN
+```
+
+**Solución**:
+
+1. Esperar a que se recupere (máximo 10 segundos):
+
+```bash
+# Ver estado actual
+curl http://localhost:8080/actuator/health
+# Buscar en "components": circuitbreakers
+
+# Salida esperada:
+#{
+#  "components": {
+#    "simpsonsApicircuitbreaker": {
+#      "status": "UP",
+#      "details": {
+#        "state": "CLOSED"  # ✅ Ok
+#      }
+#    }
+#  }
+#}
+```
+
+2. Si sigue abierto, revisar logs:
+
+```bash
+grep "simpsonsApi" logs/application.log
+# Buscar últimos errores
+```
+
+3. Reiniciar el servidor si persiste:
+
+```bash
+# Ctrl+C para detener
+gradle :applications:app-service:bootRun
+```
+
+### Error: "Retry exceeded, returning fallback"
+
+**Síntoma**: Después de 3 intentos, el sistema retorna datos por defecto.
+
+**¿Por qué ocurre?**:
+
+1. API externa no responde
+2. Network error o timeout
+3. Todos los reintentos fallaron
+
+**Ejemplo de respuesta fallback**:
+
+```json
+{
+   "id": -1,
+   "name": "Personaje desconocido",
+   "status": "FALLBACK_DATA",
+   "description": "No se pudo obtener información de la API",
+   "age": 0
+}
+```
+
+**Solución**:
+
+1. Verificar lógica de negocio que depende de estos datos
+2. El fallback tiene marcador `status: "FALLBACK_DATA"`
+3. Manejar gracefully en la aplicación cliente
+
+---
+
 ## 🔄 Problemas Reactivos
 
 ### Error: "Sync providers doesn't support reactive return types"
